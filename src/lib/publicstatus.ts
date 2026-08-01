@@ -102,8 +102,15 @@ type Exact<A extends string, B extends string> = [A] extends [B]
  * The runtime half. TypeScript's excess-property check does not apply to spreads or to widened
  * values, so the type system alone cannot promise that an object handed to React carries only
  * what it should. This can.
+ *
+ * **Exported solely so it can be tested directly, and that is not a formality.** Every candidate
+ * built in this file is already assembled field by field, so no current call site would notice if
+ * this function were replaced by `{ ...candidate }` — a mutation that removes the guard passes the
+ * entire suite. It is a backstop against a FUTURE mistake, and a backstop nothing exercises is a
+ * backstop nobody will notice the loss of. `test/publicstatus.test.ts` hands it a candidate with
+ * extra keys, which is the only way to make its removal visible.
  */
-function seal<T extends object>(fields: readonly (keyof T & string)[], candidate: T): T {
+export function seal<T extends object>(fields: readonly (keyof T & string)[], candidate: T): T {
   const out: Record<string, unknown> = {}
   for (const field of fields) out[field] = candidate[field]
   return out as T
