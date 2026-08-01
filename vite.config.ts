@@ -28,6 +28,9 @@ export default defineConfig({
     // that is only safe when every rebuild produces a new filename.
     sourcemap: true,
   },
-  server: { port: 5180 },
-  preview: { port: 5180 },
+  // 5188. This was 5180, inherited from the template, which is the port micro-hub-web binds — so
+  // the status page and the app whose status it reports could not be run side by side, which is
+  // the one pairing you actually want during an incident.
+  server: { port: 5188 },
+  preview: { port: 5188 },
 })

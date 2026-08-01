@@ -182,7 +182,7 @@ midpoint plus an outline, "not measured" is hollow, and there is no fourth or fi
 
 ```bash
 pnpm install          # ../ui must be installed first; see the note in package.json
-pnpm dev              # http://localhost:5180, talking to Beacon on :4011
+pnpm dev              # http://localhost:5188, talking to Beacon on :4011
 pnpm typecheck
 pnpm test             # node:test only. No Vitest, no React Testing Library.
 pnpm build
