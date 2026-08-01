@@ -30,7 +30,19 @@
       name="description"
       content="Live availability of the CloudsForge estate, by product group. No account needed."
     />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192x192.png" />
+
     <title>CloudsForge Status</title>
+  
+    <!-- Relative on purpose: one bundle serves localhost, preview and the apex, and this file
+         names no hostname. Crawlers resolve it against the page they fetched. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="CloudsForge Status" />
+    <meta property="og:description" content="Current status of the CloudsForge platform. No account needed." />
+    <meta property="og:image" content="/og-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="root">
