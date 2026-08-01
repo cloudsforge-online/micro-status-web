@@ -1,5 +1,9 @@
 /**
- * The rule this template exists to keep: NOTHING IN THE BUNDLE KNOWS WHICH ENVIRONMENT IT IS IN.
+ * NOTHING IN THE BUNDLE KNOWS WHICH ENVIRONMENT IT IS IN.
+ *
+ * Inherited from the web template and kept verbatim in substance, because the rule bites harder
+ * here: this image is the one that must be promotable unchanged and servable from anywhere,
+ * including a static mirror put up because the primary is down.
  *
  * A `VITE_` variable is read at build time and frozen into the artefact. An artefact with an
  * environment frozen into it has to be rebuilt to be promoted, which means the thing that reaches
