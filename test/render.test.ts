@@ -22,6 +22,11 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { AboutPage } from '../src/pages/about.tsx'
+import { CurrentPage } from '../src/pages/current.tsx'
+import { HistoryPage } from '../src/pages/history.tsx'
+import { NotFoundPage } from '../src/pages/not-found.tsx'
 import { IncidentCard } from '../src/components/incidents.tsx'
 import { Observed } from '../src/components/observed.tsx'
 import { StateChip, StateLegend } from '../src/components/state.tsx'
@@ -255,5 +260,62 @@ describe('an observation stamp is never silently absent', () => {
     const ancient = new Date(NOW.getTime() - 3 * 60 * 60_000).toISOString()
     const markup = renderToStaticMarkup(createElement(Observed, { at: ancient, now: NOW }))
     assert.ok(markup.includes('Treat it as history, not as status.'))
+  })
+})
+
+describe('the whole page tree constructs, and its first paint is not green', () => {
+  /**
+   * The pages are rendered through the real router. `useStatus` runs its fetch in an effect, which
+   * `renderToStaticMarkup` does not execute — so this is precisely the FIRST PAINT, before any
+   * answer has arrived. That is the state a reader sees on a slow connection during an incident,
+   * and the assertion is that it claims nothing.
+   *
+   * It also catches the class of failure no unit test can: a bad import, a hook called
+   * conditionally, a component reading a field off undefined. Those throw here.
+   */
+  const page = (path: string): string =>
+    renderToStaticMarkup(
+      createElement(
+        MemoryRouter,
+        { initialEntries: [path] },
+        createElement(
+          Routes,
+          null,
+          createElement(Route, { index: true, element: createElement(CurrentPage) }),
+          createElement(Route, { path: 'history', element: createElement(HistoryPage) }),
+          createElement(Route, { path: 'about', element: createElement(AboutPage) }),
+          createElement(Route, { path: '*', element: createElement(NotFoundPage) }),
+        ),
+      ),
+    )
+
+  it('renders the current page before any answer, claiming nothing', () => {
+    const markup = page('/')
+    assert.ok(markup.includes('Checking'))
+    assert.ok(markup.includes('Not determined'))
+    // The words that would be a lie at this moment.
+    assert.equal(markup.includes('All systems operational'), false)
+    assert.equal(markup.includes('st-chip--good'), false)
+  })
+
+  it('renders the history page before any answer, with no history invented', () => {
+    const markup = page('/history')
+    assert.ok(markup.includes('Incident history'))
+    assert.equal(markup.includes('st-chip--good'), false)
+  })
+
+  it('renders the methodology page with no data at all, which is the point of it', () => {
+    // This route makes no request. It is the page that still works when Beacon is unreachable.
+    const markup = page('/about')
+    assert.ok(markup.includes('How we measure'))
+    assert.ok(markup.includes('deliberately withhold'))
+    assert.ok(markup.includes('Missing is missing'))
+  })
+
+  it('renders a real not-found page for an address it does not own', () => {
+    const markup = page('/nope/not/a/route')
+    assert.ok(markup.includes('Page not found'))
+    // And it says explicitly that a 404 is not a statement about the estate's health.
+    assert.ok(markup.includes('whether the estate is healthy'))
   })
 })
