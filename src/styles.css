@@ -1,0 +1,732 @@
+/**
+ * The status page's own layer, on top of @cloudsforge/ui.
+ *
+ * ── The visual direction, stated once ────────────────────────────────────────────────────────
+ *
+ * This page is read under stress, often on a phone, often by somebody who has just been told
+ * something is broken. So it is set like a notice board and not like a product: one verdict at the
+ * top at a size that is legible across a room, one column, generous line height, and nothing that
+ * moves. There is no hero gradient and no animation — a page that animates while a reader is
+ * trying to establish whether their money is safe is a page that is showing off.
+ *
+ * ── The one rule about colour ────────────────────────────────────────────────────────────────
+ *
+ * Every status tone below sets a fill AND is always accompanied in the markup by a glyph and a
+ * word (see src/lib/states.ts). Nothing in this file may be used to convey state on its own, and
+ * `test/states.test.ts` plus the CI grep are what keep that true. The tones are the design
+ * system's reserved three — `--cf-viz-good`, `--cf-viz-warn`, `--cf-viz-crit` — plus two that are
+ * deliberately NOT hues: maintenance is the neutral ash with a hatch, and "not determined" is a
+ * hollow outline. Inventing a fourth and fifth status colour is exactly what the tokens file
+ * refuses to do, and for the measured reason quoted there.
+ *
+ * ── Prefix ──────────────────────────────────────────────────────────────────────────────────
+ *
+ * Everything is `st-`. Nothing may collide with, or quietly override, a `cf-` class.
+ *
+ * ── Literal colours ─────────────────────────────────────────────────────────────────────────
+ *
+ * There are none. Every colour is a token, so the page follows the substrate; a hex here is a
+ * colour that stops following it.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--cf-bg);
+  color: var(--cf-fg);
+  font-family: var(--cf-font-sans);
+  font-size: var(--cf-text-lg);
+  line-height: 1.6;
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- the skip link ------------------------------------------------- */
+
+.st-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: var(--cf-space-sm) var(--cf-space-xl);
+  background: var(--cf-accent);
+  color: var(--cf-accent-ink);
+  border-radius: 0 0 var(--cf-radius) 0;
+  font-weight: 600;
+}
+
+/* A skip link that stays hidden when focused is worse than none: the reader activates it and
+   cannot tell whether anything happened. */
+.st-skip:focus {
+  left: 0;
+}
+
+/* --- chrome -------------------------------------------------------- */
+
+.st-head {
+  border-bottom: 1px solid var(--cf-line);
+  background: var(--cf-bg-sunken);
+}
+
+.st-head__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-lg);
+  max-width: var(--cf-max-w);
+  margin: 0 auto;
+  padding: 0 var(--cf-space-xl);
+  min-height: var(--cf-bar-h);
+  flex-wrap: wrap;
+}
+
+.st-head__logo {
+  display: inline-flex;
+  align-items: center;
+  color: var(--cf-fg);
+}
+
+.st-head__sep {
+  width: 1px;
+  height: 18px;
+  background: var(--cf-line-strong);
+}
+
+.st-head__name {
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-lg);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cf-fg-dim);
+}
+
+.st-nav {
+  display: flex;
+  gap: var(--cf-space-lg);
+  margin-left: auto;
+}
+
+.st-nav__link {
+  color: var(--cf-fg-dim);
+  text-decoration: none;
+  font-size: var(--cf-text-md);
+  padding: var(--cf-space-sm) 0;
+  border-bottom: 2px solid transparent;
+}
+
+.st-nav__link:hover {
+  color: var(--cf-fg);
+}
+
+/* The current page is marked by an underline as well as by colour. */
+.st-nav__link.is-current {
+  color: var(--cf-fg);
+  border-bottom-color: var(--cf-accent);
+}
+
+.st-main {
+  max-width: var(--cf-max-w);
+  margin: 0 auto;
+  padding: var(--cf-space-3xl) var(--cf-space-xl);
+}
+
+.st-foot {
+  max-width: var(--cf-max-w);
+  margin: 0 auto;
+  padding: var(--cf-space-3xl) var(--cf-space-xl);
+  border-top: 1px solid var(--cf-line);
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-md);
+}
+
+.st-foot__links a {
+  color: var(--cf-fg-dim);
+}
+
+/* --- the hero ------------------------------------------------------ */
+
+.st-hero {
+  padding: 0 0 var(--cf-space-3xl);
+  border-bottom: 1px solid var(--cf-line);
+  margin-bottom: var(--cf-space-3xl);
+}
+
+.st-hero__headline {
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-4xl);
+  line-height: 1.15;
+  margin: var(--cf-space-lg) 0 var(--cf-space-sm);
+}
+
+.st-hero__detail {
+  margin: 0 0 var(--cf-space-lg);
+  color: var(--cf-fg-dim);
+  max-width: 62ch;
+}
+
+.st-hero__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--cf-space-lg);
+  flex-wrap: wrap;
+  margin: var(--cf-space-xl) 0 0;
+}
+
+.st-hero__stale {
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-md);
+}
+
+.st-btn {
+  font: inherit;
+  font-size: var(--cf-text-md);
+  padding: var(--cf-space-sm) var(--cf-space-xl);
+  border-radius: var(--cf-radius);
+  border: 1px solid var(--cf-line-strong);
+  background: var(--cf-surface-solid);
+  color: var(--cf-fg);
+  cursor: pointer;
+}
+
+.st-btn:hover:not(:disabled) {
+  background: var(--cf-surface-hover);
+}
+
+.st-btn:disabled {
+  color: var(--cf-fg-mute);
+  cursor: default;
+}
+
+/* --- status marks: glyph + word + colour --------------------------- */
+
+.st-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-space-sm);
+  padding: var(--cf-space-2xs) var(--cf-space-lg);
+  border-radius: var(--cf-radius-lg);
+  border: 1px solid var(--cf-line-strong);
+  background: var(--cf-surface-solid);
+  font-size: var(--cf-text-md);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.st-chip--hero {
+  font-size: var(--cf-text-xl);
+  padding: var(--cf-space-sm) var(--cf-space-2xl);
+}
+
+.st-chip__glyph {
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.st-chip--good .st-chip__glyph,
+.st-dot--good {
+  color: var(--cf-viz-good);
+}
+
+.st-chip--warn .st-chip__glyph,
+.st-dot--warn {
+  color: var(--cf-viz-warn);
+}
+
+.st-chip--crit .st-chip__glyph,
+.st-dot--crit {
+  color: var(--cf-viz-crit);
+}
+
+.st-chip--plan .st-chip__glyph,
+.st-dot--plan {
+  color: var(--cf-fg-dim);
+}
+
+.st-chip--void .st-chip__glyph,
+.st-dot--void {
+  color: var(--cf-fg-mute);
+}
+
+/* The border carries the tone too, so the chip is distinguishable at a glance without relying on
+   a glyph the reader has to focus on. It is still never the only channel. */
+.st-chip--good {
+  border-color: color-mix(in srgb, var(--cf-viz-good) 55%, transparent);
+}
+
+.st-chip--warn {
+  border-color: color-mix(in srgb, var(--cf-viz-warn) 55%, transparent);
+}
+
+.st-chip--crit {
+  border-color: color-mix(in srgb, var(--cf-viz-crit) 55%, transparent);
+}
+
+.st-chip--void {
+  border-style: dashed;
+}
+
+.st-dot {
+  font-size: 1em;
+}
+
+/* --- the uptime strip ---------------------------------------------- */
+
+.st-strip {
+  margin: var(--cf-space-xl) 0 0;
+}
+
+.st-strip__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.st-bar {
+  /* A 2px surface gap between marks is drawn as geometry, not as a stroke: the bars are laid out
+     6px wide on an 8px pitch in components/uptime.tsx. */
+  transition: none;
+}
+
+.st-bar--good {
+  fill: var(--cf-viz-good);
+}
+
+.st-bar--warn {
+  fill: var(--cf-viz-warn);
+}
+
+.st-bar--crit {
+  fill: var(--cf-viz-crit);
+}
+
+/* Maintenance is NOT a fourth status hue. It is the neutral ash from the diverging midpoint, which
+   is not in the categorical or status sets and therefore cannot be confused with a verdict. */
+.st-bar--plan {
+  fill: var(--cf-viz-mid);
+  stroke: var(--cf-fg-mute);
+  stroke-width: 1;
+}
+
+/* "Not measured" is hollow. There is no colour that means "no data", and drawing this bar filled
+   in any hue would rank a gap as a day we have a reading for. */
+.st-bar--void {
+  fill: none;
+  stroke: var(--cf-fg-mute);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.st-strip__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--cf-space-lg);
+  margin-top: var(--cf-space-sm);
+  font-size: var(--cf-text-sm);
+  color: var(--cf-fg-mute);
+}
+
+.st-strip__figure {
+  color: var(--cf-fg-dim);
+  text-align: center;
+}
+
+.st-strip__gap {
+  color: var(--cf-fg-mute);
+}
+
+.st-strip__none,
+.st-quiet {
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-md);
+  max-width: 66ch;
+}
+
+/* --- the legend ---------------------------------------------------- */
+
+.st-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cf-space-lg);
+  list-style: none;
+  padding: 0;
+  margin: var(--cf-space-lg) 0 0;
+  font-size: var(--cf-text-sm);
+  color: var(--cf-fg-dim);
+}
+
+.st-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cf-space-2xs);
+}
+
+/* The swatch heights repeat the strip's ordinal height channel, so the legend teaches both the
+   colour and the shape rather than only the colour. */
+.st-legend__swatch {
+  width: 6px;
+  border-radius: var(--cf-radius-sm) var(--cf-radius-sm) 0 0;
+  align-self: flex-end;
+}
+
+.st-legend__swatch--good {
+  height: 14px;
+  background: var(--cf-viz-good);
+}
+
+.st-legend__swatch--plan {
+  height: 10px;
+  background: var(--cf-viz-mid);
+  border: 1px solid var(--cf-fg-mute);
+}
+
+.st-legend__swatch--warn {
+  height: 8px;
+  background: var(--cf-viz-warn);
+}
+
+.st-legend__swatch--crit {
+  height: 5px;
+  background: var(--cf-viz-crit);
+}
+
+.st-legend__swatch--void {
+  height: 14px;
+  background: none;
+  border: 1px dashed var(--cf-fg-mute);
+}
+
+/* --- the exception table ------------------------------------------- */
+
+.st-table {
+  margin-top: var(--cf-space-lg);
+  font-size: var(--cf-text-md);
+}
+
+.st-table summary {
+  cursor: pointer;
+  color: var(--cf-fg-dim);
+}
+
+.st-table table {
+  border-collapse: collapse;
+  margin-top: var(--cf-space-sm);
+  width: 100%;
+  max-width: 32rem;
+}
+
+.st-table th,
+.st-table td {
+  text-align: left;
+  padding: var(--cf-space-2xs) var(--cf-space-lg) var(--cf-space-2xs) 0;
+  border-bottom: 1px solid var(--cf-line);
+  font-weight: 400;
+}
+
+.st-table th {
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* --- observation stamps -------------------------------------------- */
+
+.st-observed {
+  margin: 0;
+  font-size: var(--cf-text-md);
+  color: var(--cf-fg-mute);
+}
+
+.st-observed--stale,
+.st-observed--ancient,
+.st-observed--none {
+  color: var(--cf-viz-warn);
+}
+
+.st-observed__note {
+  color: var(--cf-fg-dim);
+}
+
+/* --- sections ------------------------------------------------------ */
+
+.st-section {
+  margin: 0 0 var(--cf-space-3xl);
+}
+
+.st-section h2,
+.st-prose h2 {
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-2xl);
+  margin: 0 0 var(--cf-space-xl);
+}
+
+.st-groups {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--cf-space-2xl);
+}
+
+.st-group {
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius-lg);
+  background: var(--cf-bg-raised);
+  padding: var(--cf-space-xl);
+}
+
+.st-group__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cf-space-lg);
+  flex-wrap: wrap;
+}
+
+.st-group__name {
+  font-size: var(--cf-text-xl);
+  margin: 0;
+}
+
+.st-group__says {
+  margin: var(--cf-space-2xs) 0 0;
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-md);
+}
+
+/* --- incidents ----------------------------------------------------- */
+
+.st-incident {
+  border: 1px solid var(--cf-line);
+  border-left: 3px solid var(--cf-line-strong);
+  border-radius: var(--cf-radius);
+  background: var(--cf-bg-raised);
+  padding: var(--cf-space-xl);
+  margin: 0 0 var(--cf-space-xl);
+}
+
+.st-incident__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cf-space-lg);
+  flex-wrap: wrap;
+}
+
+.st-incident__group {
+  margin: 0;
+  font-size: var(--cf-text-xl);
+}
+
+.st-incident__state,
+.st-incident__severity {
+  font-size: var(--cf-text-sm);
+  color: var(--cf-fg-dim);
+  letter-spacing: 0.04em;
+}
+
+.st-incident__severity {
+  font-family: var(--cf-font-mono);
+  color: var(--cf-fg-mute);
+}
+
+.st-incident__times,
+.st-incident__ref {
+  margin: var(--cf-space-sm) 0 0;
+  font-size: var(--cf-text-md);
+  color: var(--cf-fg-mute);
+}
+
+.st-incident__ref code {
+  font-family: var(--cf-font-mono);
+  font-size: var(--cf-text-sm);
+}
+
+.st-incident__quiet {
+  margin: var(--cf-space-lg) 0 0;
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-md);
+  max-width: 66ch;
+}
+
+.st-updates,
+.st-history,
+.st-windows,
+.st-links {
+  list-style: none;
+  padding: 0;
+  margin: var(--cf-space-xl) 0 0;
+}
+
+.st-update {
+  border-top: 1px solid var(--cf-line);
+  padding: var(--cf-space-lg) 0 0;
+  margin: var(--cf-space-lg) 0 0;
+}
+
+/* Operator prose. `white-space: pre-line` keeps the paragraph breaks somebody typed without
+   letting a long unbroken token push the layout sideways. */
+.st-update__body {
+  margin: var(--cf-space-2xs) 0 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  max-width: 72ch;
+}
+
+.st-window {
+  border: 1px solid var(--cf-line);
+  border-radius: var(--cf-radius);
+  padding: var(--cf-space-lg) var(--cf-space-xl);
+  margin: 0 0 var(--cf-space-lg);
+}
+
+.st-window__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--cf-space-lg);
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.st-window__group {
+  font-weight: 600;
+}
+
+.st-window__when {
+  color: var(--cf-fg-mute);
+  font-size: var(--cf-text-md);
+}
+
+.st-window__summary {
+  margin: var(--cf-space-2xs) 0 0;
+  color: var(--cf-fg-dim);
+  overflow-wrap: anywhere;
+}
+
+/* --- the void state ------------------------------------------------ */
+
+.st-void {
+  border: 1px dashed var(--cf-line-strong);
+  border-radius: var(--cf-radius-lg);
+  padding: var(--cf-space-2xl);
+  max-width: 68ch;
+}
+
+.st-void h2 {
+  margin-top: 0;
+}
+
+/* --- prose --------------------------------------------------------- */
+
+.st-prose {
+  max-width: 68ch;
+}
+
+.st-prose h1,
+.st-page > h1 {
+  font-family: var(--cf-font-display);
+  font-size: var(--cf-text-3xl);
+  margin: 0 0 var(--cf-space-lg);
+}
+
+.st-lede {
+  color: var(--cf-fg-dim);
+  font-size: var(--cf-text-xl);
+  max-width: 66ch;
+}
+
+.st-defs__row {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: var(--cf-space-lg);
+  padding: var(--cf-space-sm) 0;
+  border-bottom: 1px solid var(--cf-line);
+}
+
+.st-defs dt {
+  font-weight: 600;
+}
+
+.st-defs dd {
+  margin: 0;
+  color: var(--cf-fg-dim);
+}
+
+.st-links li {
+  margin: var(--cf-space-sm) 0;
+}
+
+.st-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- narrow viewports ---------------------------------------------- */
+
+@media (max-width: 40rem) {
+  .st-hero__headline {
+    font-size: var(--cf-text-3xl);
+  }
+
+  .st-defs__row {
+    grid-template-columns: 1fr;
+    gap: var(--cf-space-2xs);
+  }
+
+  .st-strip__caption {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* --- forced colours ------------------------------------------------ */
+
+/*
+ * In forced-colours mode every fill above is replaced by the user's palette, and the status hues
+ * stop existing. The strip stays readable because height is doing the work — and the marks are
+ * given an explicit border so the hollow "not measured" bar is still distinguishable from a filled
+ * one. This is the mode where a colour-only status page becomes completely unreadable.
+ */
+@media (forced-colors: active) {
+  .st-bar {
+    forced-color-adjust: none;
+    stroke: CanvasText;
+    stroke-width: 1;
+  }
+
+  .st-bar--void {
+    fill: Canvas;
+  }
+
+  .st-bar--good,
+  .st-bar--warn,
+  .st-bar--crit,
+  .st-bar--plan {
+    fill: CanvasText;
+  }
+}
+
+/* --- reduced motion ------------------------------------------------ */
+
+/*
+ * There is no animation on this page to disable. The block is here so that adding one is a
+ * conscious act with a place to declare the reduced-motion behaviour, rather than something that
+ * ships unnoticed onto the page people read when they are already anxious.
+ */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

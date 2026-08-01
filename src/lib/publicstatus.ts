@@ -382,7 +382,8 @@ function parseDay(raw: unknown, tally: Tally): PublicDay | null {
   const state = readMember(field(raw, 'state'), PUBLIC_STATES)
   // A day whose state is unreadable keeps its place in the strip as `unknown`. Dropping it would
   // shift every bar after it by one day, which silently rewrites when an outage happened.
-  return seal(PUBLIC_DAY_FIELDS, { date, state: state ?? 'unknown' })
+  const cell: CellState = state ?? 'unknown'
+  return seal(PUBLIC_DAY_FIELDS, { date, state: cell })
 }
 
 function parseGroup(raw: unknown, tally: Tally): PublicGroup | null {
@@ -395,9 +396,10 @@ function parseGroup(raw: unknown, tally: Tally): PublicGroup | null {
   if (state === null) tally.omitted += 1
   const uptime = readList(field(raw, 'uptime'))
   tally.omitted += uptime.omitted
+  const cell: CellState = state ?? 'unknown'
   return seal(PUBLIC_GROUP_FIELDS, {
     group,
-    state: state ?? 'unknown',
+    state: cell,
     uptime: uptime.items
       .map((entry) => parseDay(entry, tally))
       .filter((entry): entry is PublicDay => entry !== null),
@@ -452,9 +454,10 @@ export function parseStatus(raw: unknown): PublicStatus | null {
   const state = readMember(field(raw, 'state'), PUBLIC_STATES)
   if (state === null) tally.omitted += 1
 
+  const cell: CellState = state ?? 'unknown'
   return seal(PUBLIC_STATUS_FIELDS, {
     generatedAt,
-    state: state ?? 'unknown',
+    state: cell,
     groups: parsedGroups,
     incidents: parsedIncidents,
     maintenance: parsedMaintenance,
