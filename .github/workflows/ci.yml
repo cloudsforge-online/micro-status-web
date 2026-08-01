@@ -1,0 +1,260 @@
+# Continuous integration.
+#
+# ────────────────────────────────────────────────────────────────────────────────────────────────
+# THE `check` AND `image` JOBS BELOW ARE TEMPORARY, for the same reason as in every other frontend
+# in the estate: @cloudsforge/ui is unpublished and this repository consumes it as
+# `link:../ui/packages/ui`. The org's reusable `web-ci.yml` does a single checkout and then
+# `pnpm install --frozen-lockfile`, which cannot resolve a sibling directory that is not there.
+# The day the design system is published, everything from `check:` to the end of `image:` is
+# deleted and replaced by a call to the reusable workflow.
+#
+# ONE INPUT OF THE REUSABLE WORKFLOW WILL STILL NOT SUIT THIS REPOSITORY: its `image` job probes a
+# deep route and requires a 200. This app's nginx.conf enumerates its real routes and answers 404
+# for everything else ON PURPOSE — an unknown address served as a success is indexed by crawlers
+# and called healthy by monitors, which on a status page is a particularly bad joke. So
+# `build-image: false` will be passed and the image is checked here, where the probe can assert the
+# honest answer instead.
+# ────────────────────────────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: status-web }
+
+      # Temporary, for the same reason as the Dockerfile's second build context: the design system
+      # is unpublished and resolves through `link:../ui/packages/ui`.
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-ui
+          path: ui
+          # micro-ui is private; without a contents:read token this checkout 404s and the job
+          # dies before install.
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+
+      # Pinned, because the checkout lives at status-web/ and the action looks for the
+      # packageManager field in the workspace root, where there is no package.json.
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.9.0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm, cache-dependency-path: status-web/pnpm-lock.yaml }
+
+      # `link:` resolves to the sibling's own node_modules, so the design system must be installed
+      # before this repository is — without this, `tsc` cannot resolve ../ui's own imports when it
+      # typechecks the linked sources.
+      - name: Install the sibling design system
+        run: pnpm --dir ui install --frozen-lockfile
+
+      - name: Install
+        working-directory: status-web
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: status-web
+        run: pnpm typecheck
+
+      - name: Test
+        working-directory: status-web
+        run: pnpm test
+
+      - name: Build
+        working-directory: status-web
+        run: pnpm build
+
+      # A frontend that builds to nothing is a blank page, not a build failure.
+      - name: The bundle exists
+        working-directory: status-web
+        run: |
+          test -f dist/index.html || { echo "::error::dist/index.html is missing after a successful build"; exit 1; }
+          echo "ok: $(find dist -type f | wc -l | tr -d ' ') files in dist"
+
+  rules:
+    name: Estate rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No build-time configuration
+        # The same rule as test/no-build-time-config.test.ts, checked again here so it fails even
+        # if somebody deletes the test along with the line it forbids. A `VITE_` variable is read
+        # at build time and frozen into the artefact, and an artefact with an environment frozen
+        # into it has to be rebuilt to be promoted.
+        run: |
+          set -uo pipefail
+          if grep -rn --include='*.ts' --include='*.tsx' --include='*.html' \
+               -e 'import\.meta\.env' -e 'VITE_' src index.html; then
+            echo "::error::this bundle must read no build-time environment; hosts come from cloudsforgeHosts() at runtime"
+            exit 1
+          fi
+          echo "ok: no build-time environment"
+
+      - name: No hard-coded CloudsForge hostname
+        # A literal hostname is a second, unversioned copy of the surface registry, and the copy is
+        # the one that will be wrong.
+        run: |
+          set -uo pipefail
+          if grep -rn --include='*.ts' --include='*.tsx' 'cloudsforge\.online' src; then
+            echo "::error::resolve hosts through cloudsforgeHosts() rather than naming them"
+            exit 1
+          fi
+          echo "ok: no literal hostnames in src"
+
+      - name: The SPA fallback keeps its 404
+        # Comments are stripped first: nginx.conf's own header QUOTES the directive it forbids in
+        # order to explain why the routes are enumerated by hand, so a grep over the raw file
+        # matches the warning and fails a correct config.
+        run: |
+          set -uo pipefail
+          directives=$(grep -v '^[[:space:]]*#' nginx.conf)
+          if printf '%s\n' "$directives" | grep -nE 'try_files[[:space:]]+\$uri[[:space:]]+(\$uri/[[:space:]]+)?/index\.html'; then
+            echo "::error::unknown paths must 404; serve the shell through error_page 404 /index.html"
+            exit 1
+          fi
+          printf '%s\n' "$directives" | grep -q 'error_page 404 /index.html'
+          echo "ok: unknown paths answer 404"
+
+      # ────────────────────────────────────────────────────────────────────────────────────────
+      # THE TWO RULES THAT ARE SPECIFIC TO THIS REPOSITORY.
+      # ────────────────────────────────────────────────────────────────────────────────────────
+
+      - name: This bundle contains no authentication
+        # A status page must render when identity is the thing that has broken. Comments are
+        # stripped first, because several files EXPLAIN in prose why they have no auth and name
+        # the very identifiers this forbids. test/routes.test.ts asserts the same rule; this
+        # repeats it so deleting the test does not delete the rule.
+        run: |
+          set -uo pipefail
+          stripped=$(mktemp)
+          find src -name '*.ts' -o -name '*.tsx' | while read -r f; do
+            perl -0pe 's{/\*.*?\*/}{ }gs; s{^\s*//.*$}{ }gm' "$f"
+          done > "$stripped"
+          if grep -nE 'AuthProvider|ProtectedRoute|accessToken|refreshToken|localStorage|Bearer ' "$stripped"; then
+            echo "::error::this page must work when identity is down; it may hold no session of any kind"
+            exit 1
+          fi
+          echo "ok: no authentication in the bundle"
+
+      - name: Status is never conveyed by colour alone
+        # The estate's reserved status hues measure dE 4.6 apart under protanopia, so a status mark
+        # without a glyph and a word conveys nothing to a large minority of readers. The voice
+        # table is the single place that mapping lives; every state must have all three.
+        run: |
+          set -uo pipefail
+          test -f src/lib/states.ts || { echo "::error::src/lib/states.ts is missing"; exit 1; }
+          for state in operational degraded outage maintenance unknown; do
+            grep -q "  $state: {" src/lib/states.ts || { echo "::error::no voice for $state"; exit 1; }
+          done
+          grep -q 'glyph' src/lib/states.ts && grep -q 'label' src/lib/states.ts
+          # And no literal colour in the app stylesheet: a hex stops following the substrate.
+          if grep -nE '#[0-9a-fA-F]{3,8}\b' src/styles.css; then
+            echo "::error::literal colour in styles.css; every colour must be a token"
+            exit 1
+          fi
+          echo "ok: glyph, label and colour for every state"
+
+      - name: The route table, the navigation and nginx agree
+        run: test -f test/routes.test.ts && grep -q 'nginx.conf' test/routes.test.ts
+
+  image:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: status-web }
+      - uses: actions/checkout@v4
+        with:
+          repository: cloudsforge-online/micro-ui
+          path: ui
+          token: ${{ secrets.ESTATE_READ_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: status-web
+          build-contexts: uipkg=ui
+          build-args: RELEASE=${{ github.sha }}
+          push: false
+          load: true
+          tags: status-web:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: The image serves the SPA, 404s an address it does not own, and sets its headers
+        run: |
+          set -euo pipefail
+          docker run -d --name ci-status-web -p 127.0.0.1:8080:8080 status-web:ci
+          for attempt in $(seq 1 20); do
+            code=$(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/ || true)
+            [ "$code" = "200" ] && break
+            sleep 1
+          done
+          [ "${code:-}" = "200" ] || { echo "::error::the image returned ${code:-no answer} for /"; docker logs --tail 60 ci-status-web; exit 1; }
+
+          # A route this app OWNS must survive a hard refresh. Status page links are pasted into
+          # chat threads, so a deep link that 404s is the normal case failing, not an edge one.
+          deep=$(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/history || true)
+          [ "$deep" = "200" ] || { echo "::error::/history returned $deep — an owned route must be served the shell"; exit 1; }
+
+          # A route it does NOT own must answer 404 while still serving the shell.
+          unknown=$(curl -s -m 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/nope/not/a/route || true)
+          [ "$unknown" = "404" ] || { echo "::error::an unknown address returned $unknown; it must be 404"; exit 1; }
+          curl -s -m 5 http://127.0.0.1:8080/nope/not/a/route | grep -q '<div id="root">' \
+            || { echo "::error::the 404 did not serve the app shell"; exit 1; }
+
+          # ─────────────────────────────────────────────────────────────────────────────────────
+          # THE HEADER PROBE. nginx's `add_header` is all-or-nothing per level, so a location that
+          # sets Cache-Control silently drops every inherited security header. That defect shipped
+          # in the web template and was found by probing a RUNNING container rather than by reading
+          # the config — which is why this step exists and why it asserts on real responses.
+          # ─────────────────────────────────────────────────────────────────────────────────────
+          asset=$(curl -s -m 5 http://127.0.0.1:8080/ | grep -oE '/assets/[^"]+\.js' | head -1)
+          [ -n "$asset" ] || { echo "::error::could not find a hashed asset in the shell"; exit 1; }
+
+          check_header() {
+            url="$1"; header="$2"; expect="$3"
+            got=$(curl -s -m 5 -D - -o /dev/null "$url" | tr -d '\r' | grep -i "^${header}:" | head -1 | cut -d' ' -f2-)
+            case "$got" in
+              *"$expect"*) echo "ok: $url $header: $got" ;;
+              *) echo "::error::$url $header was '${got:-absent}', expected to contain '$expect'"; exit 1 ;;
+            esac
+          }
+
+          for path in / /history /about; do
+            check_header "http://127.0.0.1:8080${path}" "x-content-type-options" "nosniff"
+            check_header "http://127.0.0.1:8080${path}" "x-frame-options" "SAMEORIGIN"
+            check_header "http://127.0.0.1:8080${path}" "referrer-policy" "strict-origin"
+            # The shell names the hashed bundle. A cached copy pins a browser to a deploy that no
+            # longer exists — and on this page, to a status that no longer holds.
+            check_header "http://127.0.0.1:8080${path}" "cache-control" "no-store"
+          done
+
+          check_header "http://127.0.0.1:8080${asset}" "x-content-type-options" "nosniff"
+          check_header "http://127.0.0.1:8080${asset}" "cache-control" "immutable"
+          echo "ok: headers are set on the shell and on hashed assets"
+      - name: Down
+        if: always()
+        run: docker rm -f ci-status-web || true
+
+  hygiene:
+    # The org's reusable secret check. Cheap, and it catches the failure that cannot be undone: a
+    # secret pushed to a repository is compromised the moment it lands.
+    uses: cloudsforge-online/micro-org/.github/workflows/secret-hygiene.yml@main
+    permissions:
+      contents: read

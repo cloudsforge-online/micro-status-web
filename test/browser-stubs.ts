@@ -121,6 +121,14 @@ export interface FetchCall {
 
 export interface FetchStub {
   calls: FetchCall[]
+  /**
+   * The `credentials` mode of each call, in order.
+   *
+   * Recorded because this repository has exactly one assertion that cannot be made from the URL:
+   * that the unauthenticated status call sends no cookies. `credentials: "omit"` is invisible in
+   * the recorded headers, so without this field the test would silently prove nothing.
+   */
+  credentials: (RequestCredentials | undefined)[]
   restore: () => void
 }
 
@@ -131,6 +139,7 @@ export function installFetch(
 ): FetchStub {
   const original = globalThis.fetch
   const calls: FetchCall[] = []
+  const credentials: (RequestCredentials | undefined)[] = []
 
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = (init?.headers ?? {}) as Record<string, string>
@@ -141,12 +150,14 @@ export function installFetch(
       body: typeof init?.body === 'string' ? init.body : undefined,
     }
     calls.push(call)
+    credentials.push(init?.credentials)
     trace?.push(`fetch:${call.url}`)
     return handler(call)
   }) as typeof fetch
 
   return {
     calls,
+    credentials,
     restore() {
       globalThis.fetch = original
     },

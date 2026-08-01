@@ -103,7 +103,10 @@ export function pageState(
 function failureDetail(outcome: Exclude<StatusOutcome, { kind: 'ok' }>): string {
   switch (outcome.kind) {
     case 'unreachable':
-      return `We could not reach our own status service — ${outcome.detail}. That is a fault on our side, or between you and us. It is not a statement that anything else is healthy.`
+      // The second sentence is written tightly on purpose: the negation sits immediately before
+      // the claim it negates, so a reader skimming during an incident cannot take the tail of the
+      // sentence for reassurance. `test/degrade.test.ts` enforces exactly that proximity.
+      return `We could not reach our own status service — ${outcome.detail}. That is a fault on our side, or between you and us. It does not mean anything else is healthy.`
     case 'refused':
       return `Our status service answered with HTTP ${outcome.status} instead of a status document${
         outcome.requestId === null ? '' : ` (request ${outcome.requestId})`

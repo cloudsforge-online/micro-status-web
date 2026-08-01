@@ -25,10 +25,10 @@
  *     a CORS preflight, and every one of those is a way for the status page to fail during the
  *     event it exists to describe.
  *   * It also needs no CORS at all. The gateway's allowlist
- *     (`deploy/gateway/dynamic/policy.yml:54`) does name `https://status.cloudsforge.online` as an
- *     ORIGIN that may call other services, but there is no route for `beacon.` in that file at
- *     all — see the note in the README. A same-origin path rule is the smaller ask of the two, and
- *     the more robust.
+ *     (`deploy/gateway/dynamic/policy.yml:54`) does name the status surface's production origin as
+ *     an ORIGIN that may call other services, but there is no route for the Beacon subdomain in
+ *     that file at all — see the note in the README. A same-origin path rule is the smaller ask of
+ *     the two, and the more robust.
  *
  * Under `pnpm dev` the page is on Vite's port, where nothing proxies, so the absolute Beacon
  * origin is the only address that answers.
