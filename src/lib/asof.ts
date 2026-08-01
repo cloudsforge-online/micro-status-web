@@ -19,7 +19,7 @@
 /**
  * Past this, a document is described as stale rather than as current.
  *
- * Beacon's own scrape cadence is 30s (`beacon/src/server.ts:761`), and the projection is built per
+ * Beacon's own scrape cadence is 30s (`beacon/src/server.ts:760`), and the projection is built per
  * request, so anything older than a few minutes did not come from Beacon just now. Five minutes is
  * ten cadences: comfortably past noise, comfortably short of a reader forming a view from it.
  */

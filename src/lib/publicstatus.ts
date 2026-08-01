@@ -311,7 +311,7 @@ export function readInstant(value: unknown): string | null {
   return Number.isNaN(parsed) ? null : value
 }
 
-/** A `YYYY-MM-DD` day, as `dailyUptime` emits it (`beacon/src/publicstatus.ts:390`). */
+/** A `YYYY-MM-DD` day, as `dailyUptime` emits it (`beacon/src/publicstatus.ts:389`). */
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/
 
 export function readDay(value: unknown): string | null {
@@ -522,7 +522,7 @@ export interface Verdict {
  * incompleteness and `operational` does not: it degrades to `unknown`.
  *
  * Beacon is fail-closed for the same reason at the gate — an unmeasured thing refuses rather than
- * promotes (`beacon/src/publicstatus.ts:52-53`).
+ * promotes (`beacon/src/publicstatus.ts:50-53`).
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
 export function verdict(doc: PublicStatus | null): Verdict {

@@ -5,7 +5,7 @@
  * **COLOUR IS THE LEAST RELIABLE CHANNEL ON THIS PAGE, SO IT IS NEVER THE ONLY ONE.**
  *
  * The design system reserves three status hues and says why there are only three:
- * `ui/packages/ui/src/tokens.css:258-263` records that a fourth step between warn and critical
+ * `ui/packages/ui/src/tokens.css:255-260` records that a fourth step between warn and critical
  * "cannot clear the normal-vision floor against warn on this surface (#e8834f to #f4a63c is
  * ΔE 9.4)". Running the reserved three as a categorical set against the panel surface fails
  * harder still: good against warn is **ΔE 4.6 under protanopia**. A reader with the commonest form

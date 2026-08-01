@@ -10,7 +10,7 @@
  *
  * `updates[].body` is the one free-text field on the page, and it is free text a HUMAN wrote:
  * `beacon/src/server.ts:585-598` only publishes an update when `public === true` was passed
- * explicitly, and 13-operational-model.md:349 names the on-call operator as the only author. It
+ * explicitly, and 13-operational-model.md:347 names the on-call operator as the only author. It
  * is rendered as text — never as markup — so a body containing HTML is shown, not run.
  */
 import { Observed } from './observed.tsx'
