@@ -1,5 +1,11 @@
 # micro-status-web
 
+[![ci](https://github.com/cloudsforge-online/micro-status-web/actions/workflows/ci.yml/badge.svg)](https://github.com/cloudsforge-online/micro-status-web/actions/workflows/ci.yml)
+![node](https://img.shields.io/badge/node-%3E%3D22-5FA04E?logo=node.js&logoColor=white)
+![typescript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![module](https://img.shields.io/badge/module-ESM-F7DF1E?logo=javascript&logoColor=black)
+![tests](https://img.shields.io/badge/tests-in--process%20DOM-6E56CF)
+
 The CloudsForge **public status page**. It renders one document — Beacon's redacted public
 projection — and it is the only unauthenticated surface in the estate that shows internal health.
 
@@ -201,3 +207,10 @@ for that, and for the security headers on both the shell and a hashed asset — 
 is all-or-nothing per level, and a location that sets `Cache-Control` silently drops every
 inherited header. That defect shipped in the web template and was only found by probing a real
 response.
+
+---
+
+## Provenance
+
+The code in this repository was written by **Claude Opus 5** and **Claude Fable 5**, assets
+generated with **FLUX 2 Pro**, under human direction and review.
