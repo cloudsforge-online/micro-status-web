@@ -408,6 +408,67 @@ describe('verdict() will not claim health from an incomplete answer', () => {
     return { ...base, ...fields }
   }
 
+  it('REFUSES THE DOCUMENT THE ESTATE ACTUALLY SERVED ON 2026-08-04', () => {
+    /*
+     * ══════════════════════════════════════════════════════════════════════════════════════════
+     * Not a constructed edge case. This is a transcription of what
+     * `https://status.cloudsforge.online/api/status/public` returned at 21:45 UTC, on an estate
+     * that was healthy — mainnet and testnet up, both chains mining, eleven of twelve scheduled
+     * journeys green:
+     *
+     *     {"generatedAt":"2026-08-04T21:45:14.548Z","state":"operational","groups":[],
+     *      "incidents":[{…"group":"Account","severity":"sev2","state":"investigating",
+     *                    "openedAt":"2026-08-04T19:23:56.563Z","closedAt":null,"updates":[]}],
+     *      "maintenance":[]}
+     *
+     * Beacon had no probes registered in that deployment, so it had measured nothing — and its
+     * `worst([])` folded from its identity and published `operational` anyway. This page is the
+     * second line of defence against exactly that, and the reason the header of
+     * `src/lib/publicstatus.ts` argues the allowlist is not redundant on the reading side: the two
+     * processes are deployed on their own schedules, and the page must be right even when the
+     * service is wrong.
+     *
+     * Beacon now sends `state: null` for this case (`beacon/src/publicstatus.ts`, the note on
+     * `PublicStatus.state`). BOTH shapes are pinned below, because a browser holding a cached
+     * bundle will meet the old one for as long as its cache lives, and a rollback brings it back.
+     * ══════════════════════════════════════════════════════════════════════════════════════════
+     */
+    const asServed = {
+      generatedAt: '2026-08-04T21:45:14.548Z',
+      groups: [],
+      incidents: [
+        {
+          reference: 'e1ab13e9-902f-4bf3-b638-b3a8f7222d60',
+          group: 'Account',
+          severity: 'sev2',
+          state: 'investigating',
+          openedAt: '2026-08-04T19:23:56.563Z',
+          closedAt: null,
+          updates: [],
+        },
+      ],
+      maintenance: [],
+    }
+
+    for (const claimed of ['operational', null]) {
+      const doc = parseStatus({ ...asServed, state: claimed })
+      assert.ok(doc, 'the document parses — it is readable, it is just not a verdict')
+      const answer = verdict(doc)
+      assert.equal(
+        answer.state,
+        'unknown',
+        `beacon claimed ${JSON.stringify(claimed)} over zero groups and this page repeated it`,
+      )
+      assert.equal(answer.complete, false)
+      // The incident survives. An incomplete answer may report a problem — suppressing a known
+      // one would be its own dishonesty — and the reader still gets the reference to quote.
+      assert.equal(doc.incidents.length, 1)
+      assert.equal(doc.incidents[0]?.group, 'Account')
+      // And the time is still attributed, so the page can say WHEN it failed to determine this.
+      assert.equal(answer.asOf, '2026-08-04T21:45:14.548Z')
+    }
+  })
+
   it('claims operational only when the document is whole', () => {
     const raw = wellFormed()
     raw['state'] = 'operational'
