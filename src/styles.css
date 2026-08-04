@@ -132,18 +132,9 @@ body {
   padding: var(--cf-space-3xl) var(--cf-space-xl);
 }
 
-.st-foot {
-  max-width: var(--cf-max-w);
-  margin: 0 auto;
-  padding: var(--cf-space-3xl) var(--cf-space-xl);
-  border-top: 1px solid var(--cf-line);
-  color: var(--cf-fg-mute);
-  font-size: var(--cf-text-md);
-}
-
-.st-foot__links a {
-  color: var(--cf-fg-dim);
-}
+/* `.st-foot` and `.st-foot__links a` were here. Deleted with the markup: the footer is now
+   `CloudsForgeFooter` from @cloudsforge/ui. The links those rules styled pointed at
+   `/legal/terms` and `/legal/privacy`, both 404s — see the note in components/shell.tsx. */
 
 /* --- the hero ------------------------------------------------------ */
 

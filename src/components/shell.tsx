@@ -18,10 +18,10 @@
  * without importing the thing that can break.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
-import { CloudsForgeLogo } from '@cloudsforge/ui'
+import { CloudsForgeFooter, CloudsForgeLogo } from '@cloudsforge/ui'
 import { useEffect } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { hosts } from '../lib/hosts.ts'
+import { hosts, PRODUCT } from '../lib/hosts.ts'
 import { NAV, titleFor } from '../lib/routes.ts'
 
 export function AppShell() {
@@ -61,19 +61,36 @@ export function AppShell() {
         <Outlet />
       </main>
 
-      <footer className="st-foot">
-        <p>
-          This page is served independently of the systems it describes. If it is reachable and
-          says nothing is wrong, that is a statement about what we can measure — not a promise.
-        </p>
-        <p className="st-foot__links">
-          <a href={hosts().site}>CloudsForge</a>
-          {' · '}
-          <a href={`${hosts().site}/legal/terms`}>Terms</a>
-          {' · '}
-          <a href={`${hosts().site}/legal/privacy`}>Privacy</a>
-        </p>
-      </footer>
+      {/*
+        The company footer, from @cloudsforge/ui, REPLACING the `st-foot` this file used to write
+        itself. The honesty paragraph is kept verbatim as `note`; the three links it carried are
+        gone, and two of them were broken.
+
+        ── THE LINKS WERE WRONG, AND HAD NO WAY OF BEING FOUND OUT ───────────────────────────────
+        This footer pointed at `${hosts().site}/legal/terms` and `${hosts().site}/legal/privacy`.
+        `micro-site` routes those pages at `/terms` and `/privacy` — its `ROUTES` table has no
+        `legal` segment anywhere — so both links have been 404s. Measured through the estate
+        gateway on 2026-08-04: `https://cloudsforge.localtest.me/legal/terms` → 404,
+        `/terms` → 200.
+
+        That is exactly the cost of a hand-written footer, and exactly what the shared one removes:
+        the legal paths are now declared once, in `FOOTER_LEGAL_LINKS`, beside a test that reads
+        `micro-site`'s own route table and fails if they disagree.
+
+        NO `account` IS PASSED, and that is deliberate rather than an omission. This bundle
+        contains no session concept at all — see the header of this file — so it has no roles to
+        offer, and the footer's default with no account is to hide every operator surface. The
+        safe default is the correct one here.
+      */}
+      <CloudsForgeFooter
+        current={PRODUCT}
+        note={
+          <>
+            This page is served independently of the systems it describes. If it is reachable and
+            says nothing is wrong, that is a statement about what we can measure — not a promise.
+          </>
+        }
+      />
     </>
   )
 }
