@@ -39,8 +39,8 @@ export function IncidentCard({ incident, now }: { incident: PublicIncident; now?
       <p className="st-incident__times">
         {/* Opened and closed are both absolute and both in UTC. An incident timeline in the
             reader's local zone is a timeline two people on a call cannot compare. */}
-        Opened {opened ?? 'at an unstated time'}
-        {closed !== null ? ` · Closed ${closed}` : ' · Not yet closed'}
+        Opened {opened ?? 'at a time we were not given'}
+        {closed !== null ? ` · Closed ${closed}` : ' · Still open'}
       </p>
 
       {incident.reference !== null && (
@@ -51,8 +51,8 @@ export function IncidentCard({ incident, now }: { incident: PublicIncident; now?
 
       {incident.updates.length === 0 ? (
         <p className="st-incident__quiet">
-          No public update has been posted yet. We publish updates as we have them; silence here
-          means nobody has written one, not that nothing is happening.
+          Nobody has written a public update on this one. Silence in this space means no operator
+          has posted, and never that the work has stopped.
         </p>
       ) : (
         <ol className="st-updates">

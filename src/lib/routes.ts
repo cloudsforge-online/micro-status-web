@@ -35,7 +35,7 @@ export const ROUTES: readonly AppRoute[] = [
     label: 'Current',
     title: 'CloudsForge Status',
     description:
-      'Live availability of the CloudsForge estate, by product group. No account needed, and this page is served independently of the systems it describes.',
+      'Whether CloudsForge is working right now, one row per product group. No sign-in, and this page runs apart from the services it reports on.',
     inNav: true,
   },
   {
@@ -43,7 +43,7 @@ export const ROUTES: readonly AppRoute[] = [
     label: 'History',
     title: 'History — CloudsForge Status',
     description:
-      'Ninety days of daily availability for every CloudsForge product group, with the incidents and planned maintenance that shaped them.',
+      'Every incident CloudsForge has published inside the current window, newest first, each one carrying the moment it opened and the updates written for it.',
     inNav: true,
   },
   {
@@ -51,7 +51,7 @@ export const ROUTES: readonly AppRoute[] = [
     label: 'How we measure',
     title: 'How we measure — CloudsForge Status',
     description:
-      'What the states on this page mean, how often each system is probed, and what this page will not claim when it cannot establish an answer.',
+      'What each status word means, what we hold back on purpose, and why a reading we could not take is shown as a gap rather than as a green tick.',
     inNav: true,
   },
 ]
@@ -74,7 +74,7 @@ export const NOT_FOUND_TITLE = 'Page not found — CloudsForge Status'
 
 /** The description for one, which says what the reader is looking at rather than what it is not. */
 export const NOT_FOUND_DESCRIPTION =
-  'This address is not part of the CloudsForge status page. Current status, the ninety-day history and how we measure are all one click away.'
+  'No page sits at this address on the CloudsForge status page. The current state, the incident record and how we measure are each one link away.'
 
 /**
  * Collapse an address to the one spelling this app routes on.

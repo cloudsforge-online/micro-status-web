@@ -161,7 +161,7 @@ export const SCENARIOS: readonly Scenario[] = [
  * Every id doc 22 assigns to this surface: the whole of §6.15, the two page-level rows of §6.19,
  * the Group T rows that name a property this surface has, and the one §5.1 row.
  *
- * `status-web` appears in no row of §6.19's form table — it has one control on it, "Check again",
+ * `status-web` appears in no row of §6.19's form table — it has one control on it, "Ask again",
  * and it commits nothing. So no `BJ-ADV-<n>-H<n>` id belongs to this surface, and inventing one
  * would be claiming coverage of a hazard that cannot arise here.
  */

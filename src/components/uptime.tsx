@@ -84,11 +84,11 @@ export function UptimeStrip({ days, group }: UptimeStripProps) {
             partly empty is the number this page must never print alone — see `summarise()`.
           */}
           {percentText(summary.operationalRatio)} of {summary.measured} measured{' '}
-          {summary.measured === 1 ? 'day' : 'days'} fully operational
+          {summary.measured === 1 ? 'day' : 'days'} came back clean
           {summary.unknown > 0 && (
             <span className="st-strip__gap">
               {' '}
-              · {summary.unknown} {summary.unknown === 1 ? 'day' : 'days'} not measured
+              · {summary.unknown} {summary.unknown === 1 ? 'day' : 'days'} we never measured
             </span>
           )}
         </span>
@@ -103,7 +103,7 @@ export function UptimeStrip({ days, group }: UptimeStripProps) {
 }
 
 function describe(group: string, total: number): string {
-  return `${group}: the last ${total} days, one bar per day, worst state of the day.`
+  return `${group}: ${total} days, one bar each, every bar showing the worst state that day reached.`
 }
 
 /**
@@ -121,18 +121,18 @@ function ExceptionTable({ days }: { days: readonly PublicDay[] }) {
   if (exceptions.length === 0) {
     return (
       <p className="st-strip__none">
-        No day in this window was anything other than fully operational, and none is missing data.
+        Every day in this window was measured, and every one of them came back clean.
       </p>
     )
   }
   return (
     <details className="st-table">
       <summary>
-        {exceptions.length} {exceptions.length === 1 ? 'day' : 'days'} to look at
+        {exceptions.length} {exceptions.length === 1 ? 'day' : 'days'} worth a look
       </summary>
       <table>
         <caption className="st-visually-hidden">
-          Days in this window that were not fully operational
+          Every day in this window that fell short of clean, or that we never measured
         </caption>
         <thead>
           <tr>

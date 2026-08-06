@@ -20,8 +20,8 @@ export interface ObservedProps {
 
 const NOTE: Readonly<Record<Freshness, string | null>> = {
   fresh: null,
-  stale: 'This is older than we expect. Something between you and us may be serving a cached copy.',
-  ancient: 'This is too old to describe the present. Treat it as history, not as status.',
+  stale: 'Older than our polling should ever leave it. A cache between you and us may be holding on to an old copy.',
+  ancient: 'Far too old to describe now. Read it as a record of that moment, not as the state of anything today.',
   unknown: null,
 }
 
@@ -37,7 +37,7 @@ export function Observed({ at, verb = 'Observed', now }: ObservedProps) {
         <span className="st-observed__glyph" aria-hidden="true">
           ?
         </span>{' '}
-        Observation time unknown — we cannot say when this was measured.
+        No observation time — we cannot say when this reading was taken.
       </p>
     )
   }

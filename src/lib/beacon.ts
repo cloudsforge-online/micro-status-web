@@ -113,7 +113,7 @@ export async function fetchPublicStatus(signal?: AbortSignal): Promise<StatusOut
         requestId: res.headers.get('x-request-id'),
         context: { contentType: res.headers.get('content-type') },
       })
-      return { kind: 'unreadable', detail: 'the response was not JSON' }
+      return { kind: 'unreadable', detail: 'the reply was not in the format we expect' }
     }
 
     const status = parseStatus(body)
@@ -127,7 +127,7 @@ export async function fetchPublicStatus(signal?: AbortSignal): Promise<StatusOut
         statusCode: res.status,
         requestId: res.headers.get('x-request-id'),
       })
-      return { kind: 'unreadable', detail: 'the document carried no readable observation time' }
+      return { kind: 'unreadable', detail: 'the document arrived with no observation time on it' }
     }
 
     return { kind: 'ok', status, receivedAt: new Date().toISOString() }
@@ -144,7 +144,7 @@ export async function fetchPublicStatus(signal?: AbortSignal): Promise<StatusOut
     }
     return {
       kind: 'unreachable',
-      detail: aborted ? 'the request timed out' : 'the request could not be made',
+      detail: aborted ? 'the request ran out of time' : 'the connection could not be opened',
     }
   } finally {
     clearTimeout(timer)

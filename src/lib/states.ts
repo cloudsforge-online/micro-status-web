@@ -40,25 +40,25 @@ const VOICES: Readonly<Record<CellState, StateVoice>> = {
   operational: {
     glyph: '●',
     label: 'Operational',
-    sentence: 'Everything we measure is answering normally.',
+    sentence: 'Every check we ran came back clean.',
     tone: 'good',
   },
   degraded: {
     glyph: '▲',
     label: 'Degraded',
-    sentence: 'Some things are answering slowly or intermittently.',
+    sentence: 'Requests are getting through, but slowly or only some of the time.',
     tone: 'warn',
   },
   outage: {
     glyph: '■',
     label: 'Outage',
-    sentence: 'Something is not answering at all.',
+    sentence: 'Requests are not getting through at all.',
     tone: 'crit',
   },
   maintenance: {
     glyph: '◆',
     label: 'Maintenance',
-    sentence: 'Planned work is in progress.',
+    sentence: 'Work we scheduled is running, so interruptions here are expected.',
     tone: 'plan',
   },
   unknown: {
@@ -67,7 +67,8 @@ const VOICES: Readonly<Record<CellState, StateVoice>> = {
     // state of the estate — this is a state of OUR KNOWLEDGE, and the sentence says whose fault
     // that is. It never implies health and it never implies failure.
     label: 'Not determined',
-    sentence: 'We cannot currently determine status. This is a fault on our side, not a verdict.',
+    sentence:
+      'We asked and got no answer back. That is a gap on our side, and not a claim either way about your service.',
     tone: 'void',
   },
 }
@@ -97,10 +98,10 @@ export const STATE_ORDER: readonly CellState[] = [
  * The gloss beside it is descriptive, not a redefinition, and it is the only added word.
  */
 const SEVERITY_GLOSS: Readonly<Record<Severity, string>> = {
-  sev1: 'the highest severity we declare',
+  sev1: 'the worst grade we hand out',
   sev2: 'a major incident',
-  sev3: 'a partial or limited incident',
-  sev4: 'a minor incident',
+  sev3: 'a limited or partial incident',
+  sev4: 'a small incident',
 }
 
 export function severityLabel(severity: Severity | null): string {

@@ -44,7 +44,7 @@ export function StateChip({ state, hero = false }: StateChipProps) {
  */
 export function StateLegend() {
   return (
-    <ul className="st-legend" aria-label="What each bar means">
+    <ul className="st-legend" aria-label="What each bar can say">
       {STATE_ORDER.map((state) => {
         const voice = voiceOf(state)
         return (

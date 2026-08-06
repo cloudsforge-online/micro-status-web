@@ -12,9 +12,9 @@
  *
  *   | outcome | what actually happened | what we say |
  *   | --- | --- | --- |
- *   | `unreachable` | no answer: DNS, TLS, CORS, a dead gateway, a timeout | we cannot reach our own status service |
- *   | `refused` | an answer with a non-2xx code | our status service refused to answer |
- *   | `unreadable` | a 200 whose body we could not read | we got an answer we could not read |
+ *   | `unreachable` | no answer: DNS, TLS, CORS, a dead gateway, a timeout | our own status service never answered |
+ *   | `refused` | an answer with a non-2xx code | it replied with a code instead of a document |
+ *   | `unreadable` | a 200 whose body we could not read | it sent something we could not make sense of |
  *   | `ok` | a document | the document — with its observation time |
  *
  * They are not collapsed into "something went wrong" because they are not the same thing: the
@@ -47,7 +47,7 @@ export interface PageState {
   readonly asOf: string | null
 }
 
-const CANNOT_DETERMINE = 'We cannot currently determine status.'
+const NO_READING = 'We do not know the state of our systems.'
 
 /**
  * Reduce an outcome — plus any last-good document — to what the page shows.
@@ -66,8 +66,8 @@ export function pageState(
   if (outcome === null) {
     return {
       state: 'unknown',
-      headline: 'Checking…',
-      detail: 'Asking our status service. Nothing on this page is a verdict until it answers.',
+      headline: 'Asking our status service.',
+      detail: 'The request is in flight. Nothing below counts as a verdict until that answer lands.',
       document: null,
       showingLastGood: false,
       asOf: null,
@@ -89,11 +89,11 @@ export function pageState(
   const detail = failureDetail(outcome)
   return {
     state: 'unknown',
-    headline: CANNOT_DETERMINE,
+    headline: NO_READING,
     detail:
       lastGood === null
         ? detail
-        : `${detail} The history below is the last answer we received; it describes when it was observed, not now.`,
+        : `${detail} What is drawn below is the last reading we managed to take, and it describes the moment stamped on it.`,
     document: lastGood,
     showingLastGood: lastGood !== null,
     asOf: lastGood === null ? null : lastGoodAt,
@@ -103,16 +103,16 @@ export function pageState(
 function failureDetail(outcome: Exclude<StatusOutcome, { kind: 'ok' }>): string {
   switch (outcome.kind) {
     case 'unreachable':
-      // The second sentence is written tightly on purpose: the negation sits immediately before
-      // the claim it negates, so a reader skimming during an incident cannot take the tail of the
+      // The last sentence is written tightly on purpose: the negation sits immediately before the
+      // claim it negates, so a reader skimming during an incident cannot take the tail of the
       // sentence for reassurance. `test/degrade.test.ts` enforces exactly that proximity.
-      return `We could not reach our own status service — ${outcome.detail}. That is a fault on our side, or between you and us. It does not mean anything else is healthy.`
+      return `Our own status service never answered — ${outcome.detail}. The fault is ours, or it is on the road between you and us. That is not proof the rest is healthy.`
     case 'refused':
-      return `Our status service answered with HTTP ${outcome.status} instead of a status document${
+      return `Our status service replied HTTP ${outcome.status} rather than a document${
         outcome.requestId === null ? '' : ` (request ${outcome.requestId})`
-      }. We are not able to tell you the state of the estate.`
+      }. Nothing you did caused that, and nothing you were doing has been lost. Quote that reply code if you raise a ticket.`
     case 'unreadable':
-      return `We received an answer we could not read — ${outcome.detail}. Rather than guess at it, we are telling you that we do not know.`
+      return `Our status service sent back something we could not make sense of — ${outcome.detail}. Rather than guess at what it meant, we are leaving the verdict blank.`
     default: {
       const exhaustive: never = outcome
       throw new Error(`unmapped outcome: ${JSON.stringify(exhaustive)}`)
@@ -121,22 +121,22 @@ function failureDetail(outcome: Exclude<StatusOutcome, { kind: 'ok' }>): string 
 }
 
 function headlineFor(answer: Verdict): string {
-  if (answer.state === 'unknown') return CANNOT_DETERMINE
-  if (answer.state === 'operational') return 'All systems operational'
-  if (answer.state === 'maintenance') return 'Planned maintenance in progress'
-  if (answer.state === 'degraded') return 'Some systems degraded'
-  return 'Active outage'
+  if (answer.state === 'unknown') return NO_READING
+  if (answer.state === 'operational') return 'Nothing we watch is failing.'
+  if (answer.state === 'maintenance') return 'Scheduled work is running.'
+  if (answer.state === 'degraded') return 'Something is answering, but not properly.'
+  return 'Something has stopped answering.'
 }
 
 function detailFor(answer: Verdict, doc: PublicStatus): string {
   if (answer.state === 'unknown') {
-    return `Our status service answered, but part of the answer was missing or unreadable${
+    return `The answer came back in pieces${
       doc.omitted > 0 ? ` (${doc.omitted} ${doc.omitted === 1 ? 'entry' : 'entries'} refused)` : ''
-    }. An incomplete answer can report a problem; it cannot report that there is none, so we do not.`
+    }. A partial reading can still show you a fault, but it can never show you the absence of one — so we are not calling this clear.`
   }
   if (!answer.complete) {
-    return `Part of the answer was missing or unreadable, so this describes what we can see and not necessarily everything. The state above is the worst thing we could establish.`
+    return `Part of the answer did not arrive, so what follows is what we can see rather than the whole picture. The verdict above is the worst fault we managed to confirm.`
   }
   const groups = doc.groups.length
-  return `Measured across ${groups} product ${groups === 1 ? 'group' : 'groups'}. Each figure below carries the time it was observed.`
+  return `Read across ${groups} product ${groups === 1 ? 'group' : 'groups'}. Every figure below is stamped with the moment we took it.`
 }
