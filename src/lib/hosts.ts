@@ -11,8 +11,8 @@
  * silently get it wrong.
  *
  * `status-web` is a bundle of static files served from `status.<apex>`
- * (ui/packages/ui/src/surfaces.ts:408, `devPort: 3013`). The document it renders is produced by
- * Beacon, whose own surface is `beacon.<apex>` (surfaces.ts:290, `devPort: 4011`). So "my API
+ * (ui/packages/ui/src/surfaces.ts, `devPort: 3013`). The document it renders is produced by
+ * Beacon, whose own surface is `beacon.<apex>` (surfaces.ts, `devPort: 4011`). So "my API
  * base" is neither `hosts().status` — nothing serves an API there — nor unconditionally
  * `hosts().beacon`.
  *
@@ -25,7 +25,7 @@
  *     a CORS preflight, and every one of those is a way for the status page to fail during the
  *     event it exists to describe.
  *   * It also needs no CORS at all. The gateway's allowlist
- *     (`deploy/gateway/dynamic/policy.yml:54`) does name the status surface's production origin as
+ *     (`deploy/gateway/dynamic/policy.yml`) does name the status surface's production origin as
  *     an ORIGIN that may call other services, but there is no route for the Beacon subdomain in
  *     that file at all — see the note in the README. A same-origin path rule is the smaller ask of
  *     the two, and the more robust.

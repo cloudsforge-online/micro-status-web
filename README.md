@@ -21,9 +21,9 @@ repository serves one of them.
 Not internal target names, not hostnames, not incident subjects, not stack traces, not customer
 identifiers.
 
-The estate has already had this failure. `02-target-architecture.md:724` records that the frozen
-implementation's `redactStatus` leaked: `stack/infra/beacon/server.js:255` emitted internal target
-names and `:265-268` emitted incident subjects — `pay.rates`, `hearth.seed`.
+The estate has already had this failure. `02-target-architecture.md` records that the frozen
+implementation's `redactStatus` leaked: `stack/infra/beacon/server.js` emitted internal target
+names and incident subjects — `pay.rates`, `hearth.seed`.
 
 The new `beacon/src/publicstatus.ts` fixes that at the source, by construction: a separate public
 type, an explicit field allowlist, a runtime `seal()` and a compile-time `Exact<>` check. This
@@ -45,24 +45,26 @@ search *does* find the values which are meant to be public.
 
 ### Exactly what is rendered
 
-Every field, and the line of `beacon/src/publicstatus.ts` it was verified against:
+Every field, and the allowlist in `beacon/src/publicstatus.ts` that permits it. The allowlist is
+named rather than cited by line, because a line names a position in a file this repository does not
+own and nothing here runs when micro-beacon edits it.
 
-| Rendered | Source | Line |
-| --- | --- | --- |
-| `generatedAt`, `state`, `groups`, `incidents`, `maintenance` | `PUBLIC_STATUS_FIELDS` | `:248-254` |
-| `group`, `state`, `uptime` | `PUBLIC_GROUP_FIELDS` | `:207-211` |
-| `date`, `state` | `PUBLIC_DAY_FIELDS` | `:195` |
-| `reference`, `group`, `severity`, `state`, `openedAt`, `closedAt`, `updates` | `PUBLIC_INCIDENT_FIELDS` | `:102-110` |
-| `at`, `body` | `PUBLIC_UPDATE_FIELDS` | `:124` |
-| `group`, `summary`, `startsAt`, `endsAt` | `PUBLIC_MAINTENANCE_FIELDS` | `:226-231` |
+| Rendered | Source |
+| --- | --- |
+| `generatedAt`, `state`, `groups`, `incidents`, `maintenance` | `PUBLIC_STATUS_FIELDS` |
+| `group`, `state`, `uptime` | `PUBLIC_GROUP_FIELDS` |
+| `date`, `state` | `PUBLIC_DAY_FIELDS` |
+| `reference`, `group`, `severity`, `state`, `openedAt`, `closedAt`, `updates` | `PUBLIC_INCIDENT_FIELDS` |
+| `at`, `body` | `PUBLIC_UPDATE_FIELDS` |
+| `group`, `summary`, `startsAt`, `endsAt` | `PUBLIC_MAINTENANCE_FIELDS` |
 
 Nothing else exists in the document to render. `subject`, `cause`, `lastError`, `failures`,
-`detectedBy`, `scope` and the internal `id` are absent upstream (`:163-166`).
+`detectedBy`, `scope` and the internal `id` are absent from the public projection upstream.
 
 ### The one leak the projection can still carry
 
 A **product group name**. `productGroup` is free text written by whoever registered the probe —
-`PUT /v1/probes/:name` takes it straight from the request body (`beacon/src/server.ts:509`) — so a
+`PUT /v1/probes/:name` takes it straight from the request body (`beacon/src/server.ts`) — so a
 mistyped or copy-pasted registration would put `pay.rates` on the most public page in the estate.
 Beacon's field allowlist cannot catch that: the *field* is allowed, the *value* is not.
 
@@ -115,10 +117,10 @@ ticket is entitled to the difference.
 One route, verified by reading `buildRoutes()`:
 
 ```
-GET /api/status/public      beacon/src/server.ts:460
+GET /api/status/public      beacon/src/server.ts
 ```
 
-- **Pre-auth** when `BEACON_PUBLIC_STATUS` is on (`server.ts:461`), so this client sends **no
+- **Pre-auth** when `BEACON_PUBLIC_STATUS` is on (`server.ts`), so this client sends **no
   credential of any kind** — no bearer, no cookie (`credentials: 'omit'`), no `x-beacon-token`.
   There is no auth module in this repository at all.
 - **No `/v1` prefix and no query string.** `test/beacon.test.ts` asserts the outgoing URL, method
@@ -153,7 +155,7 @@ origin is another way for the status page to fail during the event it exists to 
 Ninety bars, one per day, per product group. Three properties are load-bearing:
 
 1. **The window is filled by DATE, never by position.** `dailyUptime` selects from `check_rollups`
-   (`beacon/src/publicstatus.ts:387-397`), so a day with no rollup produces no row and the array
+   (`beacon/src/publicstatus.ts`), so a day with no rollup produces no row and the array
    simply skips it. Mapping it positionally draws 84 green bars where 90 belong and slides history
    sideways. A missing day is `unknown`, drawn **hollow**.
 2. **No invented percentage.** The ratio is over *measured* days only, and the denominator is
@@ -162,8 +164,8 @@ Ninety bars, one per day, per product group. Three properties are load-bearing:
    — and every mark carries a word in its `<title>`, in the legend and in the exceptions table.
 
 That third point is measured, not stylistic. The design system's reserved status hues
-(`tokens.css:261-263`) run through the palette validator against the panel surface give
-**ΔE 4.6 between good and warn under protanopia**. `tokens.css:255-260` independently refuses to
+(`tokens.css`) run through the palette validator against the panel surface give
+**ΔE 4.6 between good and warn under protanopia**. `tokens.css` independently refuses to
 add a fourth status hue for the same class of reason. So maintenance takes the neutral diverging
 midpoint plus an outline, "not measured" is hollow, and there is no fourth or fifth status colour.
 
@@ -175,10 +177,10 @@ midpoint plus an outline, "not measured" is hollow, and there is no fourth or fi
   status page behind a login is not a status page, and the likeliest reason somebody is reading
   this one is that identity is down. Enforced by `test/routes.test.ts` and by a CI grep.
 - **No `CloudsForgeBar`.** The shared bar always renders a "Sign in" button when there is no
-  session (`ui/packages/ui/src/index.tsx:623-631`). Here that is a dead end offered at the worst
+  session (`ui/packages/ui/src/index.tsx`). Here that is a dead end offered at the worst
   moment. The chrome is the logo, the name and the navigation.
 - **No error budgets or SLO figures.** There is no public route for them: `GET /v1/slos` requires
-  `beacon:read` (`beacon/src/server.ts:656-657`). Rather than invent a number, the page shows only
+  `beacon:read` (`beacon/src/server.ts`). Rather than invent a number, the page shows only
   what the public projection carries.
 - **No build-time configuration.** No `.env`, no `define`, no `VITE_`. Hosts resolve at runtime
   from `window.location.hostname`, so one image serves localhost, staging and production.

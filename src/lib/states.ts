@@ -5,7 +5,7 @@
  * **COLOUR IS THE LEAST RELIABLE CHANNEL ON THIS PAGE, SO IT IS NEVER THE ONLY ONE.**
  *
  * The design system reserves three status hues and says why there are only three:
- * `ui/packages/ui/src/tokens.css:255-260` records that a fourth step between warn and critical
+ * `ui/packages/ui/src/tokens.css` records that a fourth step between warn and critical
  * "cannot clear the normal-vision floor against warn on this surface (#e8834f to #f4a63c is
  * ΔE 9.4)". Running the reserved three as a categorical set against the panel surface fails
  * harder still: good against warn is **ΔE 4.6 under protanopia**. A reader with the commonest form
@@ -88,8 +88,8 @@ export const STATE_ORDER: readonly CellState[] = [
 /**
  * The severity ladder, as words.
  *
- * `sev1`…`sev4` is the estate's internal spelling (`beacon/src/incidents.ts:36`) and Beacon
- * publishes it verbatim (`beacon/src/publicstatus.ts:175`). It is shown here as "SEV1" rather
+ * `sev1`…`sev4` is the estate's internal spelling (`beacon/src/incidents.ts`) and Beacon
+ * publishes it verbatim (`beacon/src/publicstatus.ts`). It is shown here as "SEV1" rather
  * than translated into an invented vocabulary of our own: a reader who has seen the term in a
  * post-incident review should meet the same term here, and inventing "Critical / Major / Minor"
  * would be this page making up a mapping nobody wrote down.
@@ -112,7 +112,7 @@ export function severityGloss(severity: Severity | null): string | null {
 }
 
 /**
- * Incident lifecycle, as words — `beacon/src/publicstatus.ts:58`.
+ * Incident lifecycle, as words — `beacon/src/publicstatus.ts`.
  *
  * `null` is "not stated" rather than any of the four. An incident whose lifecycle word this page
  * does not recognise is an incident we can still show honestly; guessing "investigating" would be

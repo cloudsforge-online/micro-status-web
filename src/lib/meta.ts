@@ -34,7 +34,7 @@
  * public status page that cannot be found by searching for it has failed at its only job.
  *
  * `noarchive, nosnippet, max-snippet:0` is this surface's own addition and is the reason the
- * override parameter exists at all (`ui/packages/ui/src/seo.ts:101-106`). A status page's content
+ * override parameter exists at all (`ui/packages/ui/src/seo.ts`). A status page's content
  * is true for about a minute; a search result quoting "All systems operational", scraped last
  * week and rendered under the link during today's outage, is worse than no result — it is a
  * confident answer from a source the reader trusts, and it is wrong.

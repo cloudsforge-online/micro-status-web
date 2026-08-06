@@ -4,9 +4,9 @@
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * **THE ALLOWLIST IS ON THE READING SIDE TOO, AND THAT IS NOT REDUNDANT.**
  *
- * Beacon already redacts by construction: `beacon/src/publicstatus.ts:82` copies only allowlisted
- * keys through `seal()`, and `:113-117` makes a divergence between the interface and the tuple a
- * compile error. That is a good guarantee and this file does not replace it. It duplicates it,
+ * Beacon already redacts by construction: `beacon/src/publicstatus.ts` copies only allowlisted
+ * keys through `seal()`, and its `Exact<>` check makes a divergence between the interface and the
+ * tuple a compile error. That is a good guarantee and this file does not replace it. It duplicates it,
  * one process later, for three reasons that a server-side allowlist cannot cover:
  *
  *   1. **Versions skew.** This bundle is cached in browsers and served from a CDN; Beacon is
@@ -28,26 +28,30 @@
  *
  * **WHAT THIS PAGE IS ALLOWED TO KNOW**, field by field, each verified by reading the projection:
  *
+ * The right-hand column is the allowlist in `beacon/src/publicstatus.ts` that permits the field.
+ * It names the CONSTANT and not a line: a line names a position in a file micro-beacon owns and is
+ * free to edit, and nothing runs this suite when it does. A constant moves with the code.
+ *
  * | field | beacon/src/publicstatus.ts |
  * | --- | --- |
- * | `generatedAt`, `state`, `groups`, `incidents`, `maintenance` | `:248-254` (`PUBLIC_STATUS_FIELDS`) |
- * | `group`, `state`, `uptime` | `:207-211` (`PUBLIC_GROUP_FIELDS`) |
- * | `date`, `state` | `:195` (`PUBLIC_DAY_FIELDS`) |
- * | `reference`, `group`, `severity`, `state`, `openedAt`, `closedAt`, `updates` | `:102-110` (`PUBLIC_INCIDENT_FIELDS`) |
- * | `at`, `body` | `:124` (`PUBLIC_UPDATE_FIELDS`) |
- * | `group`, `summary`, `startsAt`, `endsAt` | `:226-231` (`PUBLIC_MAINTENANCE_FIELDS`) |
+ * | `generatedAt`, `state`, `groups`, `incidents`, `maintenance` | `PUBLIC_STATUS_FIELDS` |
+ * | `group`, `state`, `uptime` | `PUBLIC_GROUP_FIELDS` |
+ * | `date`, `state` | `PUBLIC_DAY_FIELDS` |
+ * | `reference`, `group`, `severity`, `state`, `openedAt`, `closedAt`, `updates` | `PUBLIC_INCIDENT_FIELDS` |
+ * | `at`, `body` | `PUBLIC_UPDATE_FIELDS` |
+ * | `group`, `summary`, `startsAt`, `endsAt` | `PUBLIC_MAINTENANCE_FIELDS` |
  *
  * Nothing else exists to be rendered. In particular `subject`, `cause`, `lastError`, `failures`,
  * `detectedBy`, `scope` and the internal `id` are absent from the upstream projection
- * (`beacon/src/publicstatus.ts:163-166`) — which is exactly what the OLD implementation got
- * wrong: `stack/infra/beacon/server.js:255` published `t.name` and `:265-268` published
+ * (`beacon/src/publicstatus.ts`) — which is exactly what the OLD implementation got
+ * wrong: `redactStatus` in `stack/infra/beacon/server.js` published `t.name` and
  * `incidents[].subject`, both internal topology.
  */
 
 /* ------------------------------------------------------------------ the vocabulary */
 
 /**
- * The four states Beacon publishes — `beacon/src/publicstatus.ts:55`.
+ * The four states Beacon publishes — `beacon/src/publicstatus.ts`.
  *
  * Note what is NOT here: `up`, `down`, `pending`. Those are the internal probe words
  * (`beacon/src/probes.ts`), and a value from that vocabulary arriving on this wire means
@@ -55,10 +59,10 @@
  */
 export type PublicState = 'operational' | 'degraded' | 'outage' | 'maintenance'
 
-/** `beacon/src/publicstatus.ts:58`. Never the internal `detected | declared | mitigated | …`. */
+/** `beacon/src/publicstatus.ts`. Never the internal `detected | declared | mitigated | …`. */
 export type PublicIncidentState = 'investigating' | 'identified' | 'monitoring' | 'resolved'
 
-/** `beacon/src/incidents.ts:36`. Published verbatim by `projectIncident` (`publicstatus.ts:175`). */
+/** `beacon/src/incidents.ts`. Published verbatim by `projectIncident` (`publicstatus.ts`). */
 export type Severity = 'sev1' | 'sev2' | 'sev3' | 'sev4'
 
 /**
@@ -85,7 +89,7 @@ const SEVERITIES: readonly Severity[] = ['sev1', 'sev2', 'sev3', 'sev4']
 /**
  * `Exact<A, B>` is `true` only when the two string unions are identical in both directions.
  *
- * Lifted from `beacon/src/publicstatus.ts:69-73` on purpose: the guarantee is only worth having
+ * Lifted from `beacon/src/publicstatus.ts` on purpose: the guarantee is only worth having
  * if it holds at both ends of the wire. Assigning `true` to it turns a divergence between an
  * interface and its allowlist into a compile error rather than into a field that quietly starts
  * being rendered.
@@ -260,9 +264,9 @@ function readText(value: unknown, max = MAX_TEXT): string | null {
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * The one leak this projection can still carry is a group NAME, and the estate has already made
  * it once. `productGroup` is a free-text column written by whoever registered the probe
- * (`beacon/src/server.ts:509`, `PUT /v1/probes/:name` takes it straight from the body), so a
+ * (`beacon/src/server.ts`, `PUT /v1/probes/:name` takes it straight from the body), so a
  * mistyped or lazily-copied registration puts `pay.rates` or `hearth.seed` — internal topology,
- * the exact strings named in 13-operational-model.md:340 — on the most public page in the estate.
+ * the exact strings named in 13-operational-model.md — on the most public page in the estate.
  * Beacon's field allowlist cannot catch that: the field IS allowed, it is the value that is not.
  *
  * So the value is checked for the SHAPE of a display label: letters, digits, spaces and the three
@@ -285,8 +289,8 @@ export function readGroupLabel(value: unknown): string | null {
 /**
  * An incident reference: opaque, and checked to be opaque.
  *
- * `reference` is `incident.id` (`beacon/src/publicstatus.ts:173`). The comment above the field
- * calls it "opaque, stable, non-enumerable" (`:91`). This reader enforces the first of those
+ * `reference` is `incident.id` (`beacon/src/publicstatus.ts`). The comment above the field
+ * calls it "opaque, stable, non-enumerable". This reader enforces the first of those
  * three — a reference that turns out to be a sentence, a path or a subject line is refused, and
  * the incident renders without one rather than rendering it.
  */
@@ -300,7 +304,7 @@ export function readReference(value: unknown): string | null {
  * An instant, checked by round-tripping it.
  *
  * `Date.parse` accepts a great deal that is not ISO-8601 and silently reinterprets some of it in
- * local time. Everything upstream is `toISOString()` (`beacon/src/publicstatus.ts:177`), so
+ * local time. Everything upstream is `toISOString()` (`beacon/src/publicstatus.ts`), so
  * requiring the canonical spelling costs nothing and refuses the ambiguous forms.
  */
 const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/
@@ -311,7 +315,7 @@ export function readInstant(value: unknown): string | null {
   return Number.isNaN(parsed) ? null : value
 }
 
-/** A `YYYY-MM-DD` day, as `dailyUptime` emits it (`beacon/src/publicstatus.ts:389`). */
+/** A `YYYY-MM-DD` day, as `dailyUptime` emits it (`beacon/src/publicstatus.ts`). */
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/
 
 export function readDay(value: unknown): string | null {
@@ -435,7 +439,7 @@ function parseMaintenance(raw: unknown, tally: Tally): PublicMaintenance | null 
  * when" failure this page must never commit.
  *
  * The top-level `state` is NOT fatal. It is derivable from the groups, and Beacon derives it the
- * same way (`beacon/src/publicstatus.ts:360`) — so an unreadable one becomes `unknown` and
+ * same way (`beacon/src/publicstatus.ts`) — so an unreadable one becomes `unknown` and
  * `verdict()` recomputes rather than trusting it.
  */
 export function parseStatus(raw: unknown): PublicStatus | null {
@@ -479,7 +483,7 @@ export function parseStatus(raw: unknown): PublicStatus | null {
  *
  * `unknown` outranks `outage` because of what the two mean to a reader: an outage is a thing we
  * are telling you about, and an unknown is a thing we might not be. Beacon's own order
- * (`beacon/src/publicstatus.ts:289`) has no `unknown` to place — it cannot produce one.
+ * (`beacon/src/publicstatus.ts`) has no `unknown` to place — it cannot produce one.
  */
 const ORDER: readonly CellState[] = ['operational', 'maintenance', 'degraded', 'outage', 'unknown']
 
@@ -522,7 +526,7 @@ export interface Verdict {
  * incompleteness and `operational` does not: it degrades to `unknown`.
  *
  * Beacon is fail-closed for the same reason at the gate — an unmeasured thing refuses rather than
- * promotes (`beacon/src/publicstatus.ts:50-53`).
+ * promotes (`beacon/src/publicstatus.ts`).
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
 export function verdict(doc: PublicStatus | null): Verdict {

@@ -6,7 +6,7 @@
  * IS THE POINT OF THE PAGE.**
  *
  * The shared bar always renders an account control: `AccountMenu` shows a "Sign in" button
- * whenever `account.signedIn` is false (`ui/packages/ui/src/index.tsx:894-902` — re-read from
+ * whenever `account.signedIn` is false (`ui/packages/ui/src/index.tsx` — re-read from
  * source at 1.1; 623-631 is now a product glyph's SVG paths, the file having grown by the whole
  * SkipLink/MainRegion/CookieBanner block). On every other
  * surface that is right. Here it is a dead end offered at the worst moment — the likeliest reason

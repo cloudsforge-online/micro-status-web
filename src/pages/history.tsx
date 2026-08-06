@@ -2,7 +2,7 @@
  * History: every incident in the window Beacon publishes, and where each one sits.
  *
  * The window is Beacon's, not ours. `GET /api/status/public` returns `listRecent(sql,
- * deps.incidentWindowDays)` (`beacon/src/server.ts:465`), so this page shows what that call
+ * deps.incidentWindowDays)` (`beacon/src/server.ts`), so this page shows what that call
  * returned and says so — rather than implying it is the complete history of the estate, which it
  * is not and which this page has no way to establish.
  */

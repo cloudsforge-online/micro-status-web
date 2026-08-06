@@ -5,8 +5,7 @@
   because a page that paints before the attributes land flashes the default ember and then
   changes colour.
 
-  `status` is a real key in the registry (ui/packages/ui/src/surfaces.ts:672-687, the key itself on
-  675) and it shares an accent block with `beacon` (ui/packages/ui/src/tokens.css:943-955) — the
+  `status` is a real key in the registry (ui/packages/ui/src/surfaces.ts) and it shares an accent block with `beacon` (ui/packages/ui/src/tokens.css) — the
   chart `good` step, deliberately, because for a status tool the surface's own colour agreeing with
   its healthiest verdict is correct rather than confusing. The citation used to read 419-425, which
   is now the KILN and CHAR light-ramp note; it was re-read from source with @cloudsforge/ui 1.1 and
@@ -55,11 +54,11 @@
       THIS SURFACE IS INDEXED, AND IT IS THE ONLY ONE OF THE FOUR CONSOLES IN THIS BATCH THAT IS.
 
       The registry is what decides it, not this file. `robotsDirective()`
-      (ui/packages/ui/src/seo.ts:139-142) reads two fields and nothing else: `servesUi`, and
+      (ui/packages/ui/src/seo.ts) reads two fields and nothing else: `servesUi`, and
       `adminOnly`. `admin`, `lantern` and `beacon` all carry `adminOnly: true` and therefore
       resolve to `noindex, nofollow` — publishing an operator console's address, name and purpose
       to anyone searching is reconnaissance handed over for free. **`status` carries neither.**
-      Its row (ui/packages/ui/src/surfaces.ts:672-687) reads "Beacon's public face, pre-auth and
+      Its row (ui/packages/ui/src/surfaces.ts) reads "Beacon's public face, pre-auth and
       redacted" with the blurb "Public status, no account needed", and `sitemap.ts` lists
       `status.$host` in the estate sitemap that `site/nginx.conf` serves.
 
@@ -87,7 +86,7 @@
       execute JavaScript reads THIS document and nothing else, and a crawler that does execute it
       reads the runtime one. `src/lib/meta.ts` exports `ROBOTS` as the single spelling, passes it
       to `surfaceMeta()` as the documented per-surface override
-      (ui/packages/ui/src/seo.ts:101-106), and `test/meta.test.ts` reads this file and fails if
+      (ui/packages/ui/src/seo.ts), and `test/meta.test.ts` reads this file and fails if
       the two have drifted — which is exactly the failure `site/index.html` records having shipped
       once already, in its own head, for as long as it took somebody to open the served HTML.
       ══════════════════════════════════════════════════════════════════════════════════════════

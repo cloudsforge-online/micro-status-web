@@ -6,7 +6,7 @@
  * WHY TWO COPIES EXIST AT ALL, WHICH IS NOT A DESIGN SO MUCH AS AN INHERITANCE
  *
  * This is a single-page application with one `index.html`. `@cloudsforge/ui/seo` says so in its own
- * header (`seo.ts:28-32`): the tags it applies are written by script, which browsers and the
+ * header (`seo.ts`): the tags it applies are written by script, which browsers and the
  * crawlers that execute JavaScript see, and which the link-preview fetchers used by chat clients
  * generally do not — those get whatever the shell carries. On a status page that trade is louder
  * than elsewhere, because the shell IS what a reader gets when the bundle is still arriving over a
@@ -21,15 +21,15 @@
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * THE ROBOTS DIRECTIVE IS TWO DECISIONS, AND ONLY ONE OF THEM IS THIS REPOSITORY'S
  *
- *   `index, follow`  — DERIVED. `robotsDirective()` (`seo.ts:139-142`) reads `servesUi` and
- *                      `adminOnly` and nothing else, and the `status` row (`surfaces.ts:672-687`)
+ *   `index, follow`  — DERIVED. `robotsDirective()` (`seo.ts`) reads `servesUi` and
+ *                      `adminOnly` and nothing else, and the `status` row (`surfaces.ts`)
  *                      carries `servesUi: true` and no `adminOnly`. The assertions below re-derive
  *                      it from the registry rather than comparing two typed strings, so a change of
  *                      mind in the registry fails here rather than shipping silently.
  *
  *   `noarchive, nosnippet, max-snippet:0`
  *                    — THIS SURFACE'S OWN, and the reason `surfaceMeta()`'s `robots` override
- *                      parameter exists (`seo.ts:101-106`). A status page's content is true for
+ *                      parameter exists (`seo.ts`). A status page's content is true for
  *                      about a minute. A search result quoting "All systems operational", scraped
  *                      last week and rendered under the link during today's outage, is worse than
  *                      no result: it is a confident answer from a source the reader trusts, and it
@@ -58,7 +58,7 @@ const HTML = readFileSync(at('index.html'), 'utf8')
  *
  * `index.html` EXPLAINS in prose why it carries no analytics tag, and does so by naming the script
  * it refuses to load — so a grep over the raw text matches the explanation and fails a correct
- * file. `test/routes.test.ts:150-161` had to do exactly this for the same reason and records the
+ * file. `test/routes.test.ts` had to do exactly this for the same reason and records the
  * argument; `nginx.conf`'s assertions strip comments too. The stripper is asserted to be
  * load-bearing below, because a stripper that had stopped working would turn every one of these
  * into a test that passes for the wrong reason.

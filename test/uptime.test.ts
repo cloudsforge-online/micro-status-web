@@ -2,7 +2,7 @@
  * The strip's arithmetic.
  *
  * The one test worth writing here is the gap test: `dailyUptime` emits no row for a day with no
- * rollup (`beacon/src/publicstatus.ts:387-397` selects FROM `check_rollups`), so a strip built by
+ * rollup (`beacon/src/publicstatus.ts` selects FROM `check_rollups`), so a strip built by
  * position draws a short green run where a long partly-unmeasured one belongs. Everything else in
  * this file exists to stop a "fix" for that from quietly re-introducing a zero.
  */

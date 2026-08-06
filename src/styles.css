@@ -53,7 +53,7 @@ body {
    `<meta name="color-scheme" content="dark light">`, which offers the browser BOTH sets and lets
    it pick, and `data-cf-scheme` on <html> tells @cloudsforge/ui which palette to resolve. The two
    are a pair — the token layer cannot restyle a native scrollbar, and the meta tag cannot pick an
-   accent. See tokens.css:1017-1040. */
+   accent. See tokens.css. */
 
 /* `.st-skip` and `.st-skip:focus` were here. The skip link is `<SkipLink>` from @cloudsforge/ui
    now, styled by `.cf-skip` in ui.css, so every surface in the estate gets the one this page had
@@ -219,16 +219,16 @@ body {
  * system composes on — below the 4.5:1 AA floor, and the worst of the three, because the crit hue
  * is the darkest of them. @cloudsforge/ui 1.1 measured it and shipped a derived step for exactly
  * this case: `--cf-critical-text`, at 4.63:1, the same chromaticity lifted in linear light
- * (tokens.css:361). Its own `.cf-status--critical` in ui.css uses that step for `color:` while
+ * (tokens.css). Its own `.cf-status--critical` in ui.css uses that step for `color:` while
  * keeping the plain token for the border and the wash, and this file now does the same.
  *
- * `--cf-good-text` (5.41:1, tokens.css:355) and `--cf-warn-text` (6.91:1, tokens.css:358) already
+ * `--cf-good-text` (5.41:1, tokens.css) and `--cf-warn-text` (6.91:1, tokens.css) already
  * clear the floor unaided and resolve to the same values as their chart steps in the dark scheme.
  * They are named here anyway rather than left as `--cf-viz-*`, because the RULE is what has to be
  * legible to the next reader — "`color:` takes the text step" is checkable at a glance, whereas
  * "`color:` takes the text step except where the chart step happens to measure high enough" is a
  * measurement somebody has to redo. It also makes the light scheme correct for free: there the
- * three text steps are genuinely different colours (tokens.css:1127-1133).
+ * three text steps are genuinely different colours (tokens.css).
  *
  * This page is where that matters most. It is read under stress, often on a phone, often outdoors,
  * by somebody who has just been told something is broken — and the mark that has to be legible at
@@ -236,10 +236,10 @@ body {
  *
  * The BORDERS and the FILLS below keep `--cf-viz-*`. They are measured against the 3:1 non-text
  * floor, they clear it, and in the light scheme `--cf-viz-crit` deliberately keeps the dark
- * scheme's value because it measures 3.95:1 on the light panel unaided (tokens.css:1169).
+ * scheme's value because it measures 3.95:1 on the light panel unaided (tokens.css).
  * Re-pointing them would change a colour that is already correct.
  *
- * NO LITERAL VALUE IS SPELLED IN THIS COMMENT, AND THAT IS ENFORCED. `test/states.test.ts:121`
+ * NO LITERAL VALUE IS SPELLED IN THIS COMMENT, AND THAT IS ENFORCED. `test/states.test.ts`
  * greps the whole file — comments included — for a hex literal and fails on one. It is a blunt
  * rule and it is the right one here: a hex in a comment is how a hex in a declaration gets written
  * next, and this is the page where an off-palette colour is a correctness problem rather than a

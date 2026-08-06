@@ -28,8 +28,8 @@
  * has no such problem, IS generated from the design system and compared byte for byte.
  *
  * The estate sitemap still lists this surface, and that is the other half of the same decision:
- * `SITEMAP_SURFACES` (`sitemap.ts:47-49`) filters on `servesUi && adminOnly !== true`, and the
- * `status` row carries `servesUi: true` and no `adminOnly` (`surfaces.ts:672-687`). `sitemap.ts`
+ * `SITEMAP_SURFACES` (`sitemap.ts`) filters on `servesUi && adminOnly !== true`, and the
+ * `status` row carries `servesUi: true` and no `adminOnly` (`surfaces.ts`). `sitemap.ts`
  * records at 15-17 that a sitemap is an invitation and a robots directive is an instruction, and
  * that the two must not disagree — which is the reason the `Allow: /` below is not a matter of
  * local taste. Changing it would put this file in contradiction with a document `site` serves.
@@ -223,7 +223,7 @@ describe('robots.txt', () => {
      * `admin`, `lantern` and `beacon` all carry `adminOnly: true` and derive `noindex, nofollow`,
      * because publishing an operator console's address and purpose is reconnaissance handed over
      * for free. `status` carries `servesUi: true` and no `adminOnly` — the row is at
-     * `surfaces.ts:672-687`, the blurb is "Public status, no account needed" — and derives
+     * `surfaces.ts`, the blurb is "Public status, no account needed" — and derives
      * `index, follow`. That is the whole point of the surface: the reader who needs it most is the
      * one who cannot reach the platform, and somebody who is not already holding the link finds
      * this page by searching for it.

@@ -4,7 +4,7 @@
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  * **A DAY BEACON DID NOT SEND IS NOT A GOOD DAY.**
  *
- * `dailyUptime` (`beacon/src/publicstatus.ts:387-397`) selects FROM `check_rollups` and groups by
+ * `dailyUptime` (`beacon/src/publicstatus.ts`) selects FROM `check_rollups` and groups by
  * day. A day with no rollup row — Beacon was down, the scheduler had stopped, the group did not
  * exist yet, the database was restored from a backup — produces no row at all, and the array
  * simply skips it. So a naive strip that renders `uptime.map(...)` draws 84 bars where 90 belong,
@@ -16,7 +16,7 @@
  * everywhere a count appears.
  *
  * This is the same discipline as Beacon's own metrics plane, where a probe that has never run
- * publishes NOTHING rather than 0 (`beacon/src/server.ts:775-777`): "a gap in a graph is readable;
+ * publishes NOTHING rather than 0 (`beacon/src/server.ts`): "a gap in a graph is readable;
  * a series that reads 0 for a probe that has never run makes every deploy look like an outage".
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  *
@@ -27,7 +27,7 @@
  */
 import type { CellState, PublicDay } from './publicstatus.ts'
 
-/** Ninety bars — the window `beacon/src/publicstatus.ts:383` serves by default (`days = 90`). */
+/** Ninety bars — the window `beacon/src/publicstatus.ts` serves by default (`days = 90`). */
 export const WINDOW_DAYS = 90
 
 /** `YYYY-MM-DD` for an instant, in UTC. The same spelling `dailyUptime` emits. */
@@ -156,7 +156,7 @@ export function percentText(ratio: number | null): string {
  * **HEIGHT IS THE REDUNDANT CHANNEL, AND IT IS NOT DECORATION.**
  *
  * The design system's three reserved status hues are `--cf-viz-good #7fae5c`,
- * `--cf-viz-warn #f4a63c` and `--cf-viz-crit #d2543a` (`ui/packages/ui/src/tokens.css:261-263`).
+ * `--cf-viz-warn #f4a63c` and `--cf-viz-crit #d2543a` (`ui/packages/ui/src/tokens.css`).
  * Validated as a categorical set on the panel surface they FAIL colourblind separation: good
  * against warn measures ΔE 4.6 under protanopia. The tokens file says as much itself and draws
  * the right conclusion — "never colour alone: every status mark ships icon + label + colour,
