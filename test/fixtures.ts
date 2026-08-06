@@ -52,5 +52,5 @@ export function status(over: Partial<PublicStatus> = {}): PublicStatus {
   }
 }
 
-/** The path this bundle calls, spelled once. `beacon/src/server.ts:460`. */
+/** The path this bundle calls, spelled once. `beacon/src/server.ts`. */
 export const STATUS_PATH = '/api/status/public'

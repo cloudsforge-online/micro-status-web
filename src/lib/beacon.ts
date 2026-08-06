@@ -2,22 +2,22 @@
  * The one call this page makes.
  *
  * ══════════════════════════════════════════════════════════════════════════════════════════════
- * **`GET /api/status/public` — `beacon/src/server.ts:460`.**
+ * **`GET /api/status/public` — `beacon/src/server.ts`.**
  *
  * Verified by reading `buildRoutes()`, not by assuming. Three properties of that route govern
  * everything in this file, and each one is quoted where it is used below:
  *
- *   * **It is pre-auth.** `if (!deps.publicStatus) await authorise(...)` (`server.ts:461`) — when
+ *   * **It is pre-auth.** `if (!deps.publicStatus) await authorise(...)` (`server.ts`) — when
  *     `BEACON_PUBLIC_STATUS` is on, no credential is consulted. So this client sends none: no
  *     bearer, no cookie, no `x-beacon-token`. There is no auth module in this repository at all.
  *   * **There is no `/v1` prefix and no query string.** The path is exactly
- *     `/api/status/public`; `handle()` matches on the full pathname (`server.ts:260`) and the
+ *     `/api/status/public`; `handle()` matches on the full pathname (`server.ts`) and the
  *     handler reads nothing off `ctx.url.searchParams`. Two defects have already shipped in this
  *     estate from a client inventing a path — `micro-wallet` called `POST /v1/quotes` at a service
  *     that serves `/rates`, and `micro-market` called `POST /v1/decisions/market.listing` at a
  *     service with no `/v1` routes at all, which 403'd every listing. `test/beacon.test.ts`
  *     asserts the outgoing URL and method rather than the parsed response, for that reason.
- *   * **It answers `cache-control: no-store`** (`server.ts:1006`). This client asks for the same,
+ *   * **It answers `cache-control: no-store`** (`server.ts`). This client asks for the same,
  *     because a status page served from a cache is a status page that can be wrong for the
  *     duration of a TTL.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
@@ -31,7 +31,7 @@ import { APP_NAME, statusBase } from './hosts.ts'
 import { report } from './obs.ts'
 import { parseStatus, type PublicStatus } from './publicstatus.ts'
 
-/** The path, exactly as `server.ts:460` registers it. Exported so the test can pin the string. */
+/** The path, exactly as `server.ts` registers it. Exported so the test can pin the string. */
 export const PUBLIC_STATUS_PATH = '/api/status/public'
 
 /**
@@ -72,12 +72,12 @@ export async function fetchPublicStatus(signal?: AbortSignal): Promise<StatusOut
       method: 'GET',
       headers: {
         accept: 'application/json',
-        // Mirrors what the route already answers with (`server.ts:1006`). Belt and braces: an
+        // Mirrors what the route already answers with (`server.ts`). Belt and braces: an
         // intermediary that ignores the response header may still honour the request one.
         'cache-control': 'no-cache',
       },
       // ══════════════════════════════════════════════════════════════════════════════════════
-      // NO CREDENTIALS, EVER. The route is pre-auth (`server.ts:461`), so a cookie or a bearer
+      // NO CREDENTIALS, EVER. The route is pre-auth (`server.ts`), so a cookie or a bearer
       // buys this page nothing — and sending one would make the most-linked, least-trusted page
       // in the estate a CSRF surface for whatever that session can do. It also means this page
       // keeps working when identity is the thing that is broken, which is the most likely reason
@@ -89,7 +89,7 @@ export async function fetchPublicStatus(signal?: AbortSignal): Promise<StatusOut
 
     if (!res.ok) {
       // A 401 or 403 here is not a user problem to solve — it means `BEACON_PUBLIC_STATUS` is
-      // false and the projection is gated (`server.ts:461`). It is reported as a refusal so the
+      // false and the projection is gated (`server.ts`). It is reported as a refusal so the
       // page can say we cannot show status, rather than offering a sign-in this page does not do.
       return {
         kind: 'refused',

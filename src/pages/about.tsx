@@ -3,7 +3,7 @@
  *
  * A status page that explains its own limits is more useful than one that implies omniscience.
  * Everything stated here is checkable against the source it names — the withheld list is
- * 13-operational-model.md:330-336 verbatim in substance, and the "no green on unknown" rule is
+ * 13-operational-model.md verbatim in substance, and the "no green on unknown" rule is
  * implemented in `src/lib/degrade.ts` and tested in `test/degrade.test.ts`.
  *
  * Static prose, no data, no fetch: this route renders identically when everything else is down,

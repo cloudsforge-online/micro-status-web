@@ -5,7 +5,7 @@
  * This page is the most externally visible surface in the estate and the only unauthenticated one
  * that shows internal health. The failure it must never have is a field it was never meant to
  * render reaching the render layer, and the estate has already had that failure once: the frozen
- * implementation's `redactStatus` emitted `t.name` (`stack/infra/beacon/server.js:255`) and
+ * implementation's `redactStatus` emitted `t.name` (`stack/infra/beacon/server.js`) and
  * `incidents[].subject` (`:265-268`) — `pay.rates`, `hearth.seed` — which is internal topology.
  *
  * So the central test here does not check that the parser copies the right fields. It checks the
@@ -43,7 +43,7 @@ import {
 
 /**
  * A well-formed document, exactly as `projectStatus` builds one
- * (`beacon/src/publicstatus.ts:358-371`). Every key here is in one of Beacon's allowlist tuples.
+ * (`beacon/src/publicstatus.ts`). Every key here is in one of Beacon's allowlist tuples.
  */
 function wellFormed(): Record<string, unknown> {
   return {
@@ -84,7 +84,7 @@ function wellFormed(): Record<string, unknown> {
 
 /**
  * The values that must never be renderable. Each is a real internal field on the INTERNAL record
- * (`beacon/src/incidents.ts:53-67`) or a real internal name from 13-operational-model.md:340.
+ * (`beacon/src/incidents.ts`) or a real internal name from 13-operational-model.md.
  */
 const INTERNAL = {
   subject: 'pay.rates',
@@ -238,7 +238,7 @@ describe('a group label that is internal topology is refused, not drawn', () => 
   })
 
   it('accepts the seven product groups the operational model names', () => {
-    // 13-operational-model.md:325 — Account · Wallet · Trading · Worlds · Network · Create · Market
+    // 13-operational-model.md — Account · Wallet · Trading · Worlds · Network · Create · Market
     for (const value of ['Account', 'Wallet', 'Trading', 'Worlds', 'Network', 'Create', 'Market']) {
       assert.equal(readGroupLabel(value), value)
     }

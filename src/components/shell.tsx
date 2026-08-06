@@ -6,7 +6,7 @@
  * IS THE POINT OF THE PAGE.**
  *
  * The shared bar always renders an account control: `AccountMenu` shows a "Sign in" button
- * whenever `account.signedIn` is false (`ui/packages/ui/src/index.tsx:623-631`). On every other
+ * whenever `account.signedIn` is false (`ui/packages/ui/src/index.tsx`). On every other
  * surface that is right. Here it is a dead end offered at the worst moment — the likeliest reason
  * somebody is reading this page is that identity is down, and a prominent button that sends them
  * to a portal which cannot answer makes the outage look like their fault. A button wired to

@@ -5,7 +5,7 @@
  * The design system's reserved status hues are `--cf-viz-good #7fae5c`, `--cf-viz-warn #f4a63c`
  * and `--cf-viz-crit #d2543a`. Run through the palette validator against the panel surface they
  * fail colourblind separation: good against warn measures **ΔE 4.6 under protanopia**, well under
- * even the 6–8 floor that is legal only WITH secondary encoding. `tokens.css:255-260` reaches the
+ * even the 6–8 floor that is legal only WITH secondary encoding. `tokens.css` reaches the
  * same conclusion from the other side and refuses to add a fourth hue for the same reason.
  *
  * So the secondary encoding is mandatory here, and these tests are what make it structural: every

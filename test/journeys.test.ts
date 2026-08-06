@@ -347,7 +347,7 @@ describe('BJ-ADV — the page-level hazards', () => {
 
   it('BJ-ADV-23 ★ T1: every failure names what happened and offers a next step', async () => {
     // This surface renders no request id, and correctly: `GET /api/status/public` is pre-auth
-    // (`beacon/src/server.ts:461`) and there is no support desk behind a status page. The
+    // (`beacon/src/server.ts`) and there is no support desk behind a status page. The
     // equivalent obligation is that the reader is told WHICH of the four things happened and what
     // to do about it, which is what `degrade.ts` exists to guarantee.
     const cases: ReadonlyArray<{ name: string; reply: Routes[string] }> = [

@@ -8,7 +8,7 @@
  * one unit, and there is no component in this repository that renders a state without one.
  *
  * There is a second, sharper failure this file exists to prevent. Beacon stamps `generatedAt` at
- * the top of the handler (`beacon/src/server.ts:462`), so a document that arrives is by definition
+ * the top of the handler (`beacon/src/server.ts`), so a document that arrives is by definition
  * fresh — unless something between here and there is serving a cached copy, in which case the page
  * shows a confident green chip describing a world that ended twenty minutes ago. `staleness()`
  * makes that visible instead: past a threshold the page stops presenting the document as current
@@ -19,7 +19,7 @@
 /**
  * Past this, a document is described as stale rather than as current.
  *
- * Beacon's own scrape cadence is 30s (`beacon/src/server.ts:760`), and the projection is built per
+ * Beacon's own scrape cadence is 30s (`beacon/src/server.ts`), and the projection is built per
  * request, so anything older than a few minutes did not come from Beacon just now. Five minutes is
  * ten cadences: comfortably past noise, comfortably short of a reader forming a view from it.
  */
@@ -52,7 +52,7 @@ export function staleness(observedAt: string | null, now: Date = new Date()): Fr
  * The absolute stamp, in UTC, always.
  *
  * Fixed locale and an explicit time zone, for the same reason the estate's other frontends do it
- * (`web-template/src/lib/series.ts:828`): the same document must produce the same string on a
+ * (`web-template/src/lib/series.ts`): the same document must produce the same string on a
  * reader's phone, in a screenshot pasted into a ticket, and in CI. A status page read in the local
  * zone makes two people on a call disagree about when something happened, which is the one thing a
  * timestamp exists to settle.

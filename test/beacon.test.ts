@@ -21,7 +21,7 @@ import { installFetch, installWindow, json, removeWindow, type FetchStub } from 
 import { fetchPublicStatus, PUBLIC_STATUS_PATH } from '../src/lib/beacon.ts'
 import { __resetObs } from '../src/lib/obs.ts'
 
-/** Beacon's dev port, from the surface registry: `ui/packages/ui/src/surfaces.ts:294`. */
+/** Beacon's dev port, from the surface registry: `ui/packages/ui/src/surfaces.ts`. */
 const BEACON_DEV = 'http://localhost:4011'
 
 let fetchStub: FetchStub
@@ -48,7 +48,7 @@ afterEach(() => {
   __resetObs()
 })
 
-describe('GET /api/status/public — beacon/src/server.ts:460', () => {
+describe('GET /api/status/public — beacon/src/server.ts', () => {
   beforeEach(() => {
     // Under `pnpm dev` the page is on Vite's port, so the request is absolute and cross-origin.
     installWindow('http://localhost:5180/')
@@ -63,7 +63,7 @@ describe('GET /api/status/public — beacon/src/server.ts:460', () => {
   })
 
   it('has no /v1 anywhere in the path — this route is not versioned', async () => {
-    // `define('GET', '/api/status/public', …)` at server.ts:460. The gate and the probe routes are
+    // `define('GET', '/api/status/public', …)` at server.ts. The gate and the probe routes are
     // under /v1; this one is not, and inventing a prefix is the defect that shipped twice.
     await fetchPublicStatus()
     assert.equal(onlyCall().url.pathname.includes('/v1'), false)
@@ -75,7 +75,7 @@ describe('GET /api/status/public — beacon/src/server.ts:460', () => {
   })
 
   it('sends no query string — the handler reads none', async () => {
-    // server.ts:460-483 never touches `ctx.url.searchParams`.
+    // server.ts never touches `ctx.url.searchParams`.
     await fetchPublicStatus()
     assert.equal(onlyCall().url.search, '')
   })
@@ -93,7 +93,7 @@ describe('the request carries no credential of any kind', () => {
   })
 
   it('attaches no Authorization header', async () => {
-    // The route is pre-auth (`server.ts:461`), so there is nothing a bearer would buy — and this
+    // The route is pre-auth (`server.ts`), so there is nothing a bearer would buy — and this
     // bundle has no token storage to take one from.
     await fetchPublicStatus()
     const headers = onlyCall().headers
@@ -102,7 +102,7 @@ describe('the request carries no credential of any kind', () => {
   })
 
   it('attaches no x-beacon-token — the static break-glass credential is not the page’s', async () => {
-    // `server.ts:876` reads this header. A public bundle holding it would be publishing it.
+    // `server.ts` reads this header. A public bundle holding it would be publishing it.
     await fetchPublicStatus()
     const names = Object.keys(onlyCall().headers).map((name) => name.toLowerCase())
     assert.equal(names.includes('x-beacon-token'), false)
@@ -158,7 +158,7 @@ describe('the outcome union', () => {
   })
 
   it('is refused, with the code and the request id, on a non-2xx', async () => {
-    // 401 here means BEACON_PUBLIC_STATUS is false and the projection is gated (server.ts:461).
+    // 401 here means BEACON_PUBLIC_STATUS is false and the projection is gated (server.ts).
     fetchStub = installFetch(() => json(401, { error: { code: 'unauthenticated' } }, 'req-4242'))
     const outcome = await fetchPublicStatus()
     assert.equal(outcome.kind, 'refused')

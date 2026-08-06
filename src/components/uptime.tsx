@@ -16,7 +16,7 @@
  *     legend beneath, and the counted summary sentence. Nothing here can be read by colour alone.
  *
  * The strip is deliberately NOT a percentage bar and carries no number per day. `dailyUptime`
- * publishes a coarse per-day verdict and nothing finer (`beacon/src/publicstatus.ts:378-381`:
+ * publishes a coarse per-day verdict and nothing finer (`beacon/src/publicstatus.ts`:
  * "Deliberately coarse: a percentage per day per group invites the question 'which service was
  * that', which is the question this projection exists not to answer"). Drawing a partial bar to
  * suggest "97% of that day" would be this page inventing a figure Beacon refused to publish.

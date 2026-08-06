@@ -131,7 +131,7 @@ function Maintenance({ doc }: { doc: PublicStatus }) {
  * The product-group grid.
  *
  * The unit of publication is the PRODUCT GROUP and never a service name — see the header of
- * `beacon/src/publicstatus.ts:36-37`. Each row carries its own strip, because a group that has
+ * `beacon/src/publicstatus.ts`. Each row carries its own strip, because a group that has
  * been fine for ninety days and a group that recovered an hour ago read identically from a chip.
  */
 function Groups({ doc }: { doc: PublicStatus }) {

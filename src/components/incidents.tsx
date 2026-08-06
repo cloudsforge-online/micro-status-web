@@ -3,14 +3,14 @@
  *
  * Six fields and no seventh: `reference`, `group`, `severity`, `state`, `openedAt`/`closedAt` and
  * the public `updates` — the exact set `PUBLIC_INCIDENT_FIELDS` names at
- * `beacon/src/publicstatus.ts:102-110`. There is no `subject` here, no `cause`, no `lastError`,
+ * `beacon/src/publicstatus.ts`. There is no `subject` here, no `cause`, no `lastError`,
  * no `detectedBy` and no failure count, because none of them exists in the document this
  * component is given. That is redaction by construction: this file could not render an internal
  * name if somebody wanted it to.
  *
  * `updates[].body` is the one free-text field on the page, and it is free text a HUMAN wrote:
- * `beacon/src/server.ts:585-598` only publishes an update when `public === true` was passed
- * explicitly, and 13-operational-model.md:347 names the on-call operator as the only author. It
+ * `beacon/src/server.ts` only publishes an update when `public === true` was passed
+ * explicitly, and 13-operational-model.md names the on-call operator as the only author. It
  * is rendered as text — never as markup — so a body containing HTML is shown, not run.
  */
 import { Observed } from './observed.tsx'
