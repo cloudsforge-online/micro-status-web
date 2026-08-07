@@ -138,12 +138,12 @@ describe('BJ-STA — the status page', () => {
         assert.match(s.text(), GREEN_WORDS)
 
         // Now the refresh fails.
-        await s.click(s.byRole('button', /check again/i))
+        await s.click(s.byRole('button', /ask again/i))
         await s.settle(20)
 
         assert.match(
           s.text(),
-          /Showing the last answer we received/i,
+          /the last reading we hold, not a live one/i,
           'a failed refresh blanked the page a reader is looking at during an incident',
         )
         // The incident timeline survives — it was true whenever it was observed.
@@ -174,17 +174,17 @@ describe('BJ-STA — the status page', () => {
       },
       async (s) => {
         assert.doesNotMatch(s.text(), GREEN_WORDS, 'a page with no document rendered green')
-        assert.match(s.text(), /Nothing here is a verdict/i)
+        assert.match(s.text(), /No reading, and no guess/i)
         assert.match(
           s.text(),
           /we do not know/i,
           'the empty state offers reassurance instead of saying plainly that we do not know',
         )
         // And a next step that does not depend on this page working.
-        assert.match(s.text(), /treat that as the more reliable signal/i)
+        assert.match(s.text(), /believe the thing you use/i)
         // Distinct from BJ-STA-03: there is no last-good document, so nothing is being shown as
         // history either.
-        assert.doesNotMatch(s.text(), /Showing the last answer we received/i)
+        assert.doesNotMatch(s.text(), /the last reading we hold, not a live one/i)
       },
     )
   })
@@ -223,7 +223,7 @@ describe('BJ-STA — the status page', () => {
       async (s) => {
         assert.match(
           s.text(),
-          /our status service published in its current window/i,
+          /inside the window our status service publishes/i,
           'the page implies it is the complete history of the estate, which it has no way to know',
         )
         assert.ok(s.text().includes('INC-2026-0044'))
@@ -237,10 +237,10 @@ describe('BJ-STA — the status page', () => {
       page(h(HistoryPage), '/history'),
       { url: `${ORIGIN}/history`, routes: feed(fx.status({ incidents: [] })) },
       async (s) => {
-        assert.match(s.text(), /No incidents in the published window/i)
+        assert.match(s.text(), /Nobody opened an incident inside this window/i)
         assert.match(
           s.text(),
-          /not quite the same claim as the absence of an event/i,
+          /a narrower claim than the state of the world/i,
           'an empty incident list rendered as "nothing happened" is the claim this page cannot make',
         )
       },
@@ -328,16 +328,16 @@ describe('BJ-ADV — the page-level hazards', () => {
       { url: `${ORIGIN}/`, routes: { [`GET ${fx.STATUS_PATH}`]: { body: fx.status(), delayMs: 40 } } },
       async (s) => {
         // Painted, with the answer still in flight.
-        assert.match(s.text(), /Checking…/i)
+        assert.match(s.text(), /Asking…/i)
         assert.doesNotMatch(
           s.text(),
           GREEN_WORDS,
           'the page showed a verdict before anything had answered',
         )
-        assert.match(s.text(), /Nothing on this page is a verdict until it answers/i)
+        assert.match(s.text(), /Nothing below counts as a verdict until that answer lands/i)
         // The refresh control is disabled while it is asking, rather than left clickable into a
         // request that is already outstanding.
-        const button = s.byRole('button', /checking|check again/i)
+        const button = s.byRole('button', /asking|ask again/i)
         assert.ok(button.hasAttribute('disabled'), 'the refresh control is clickable mid-request')
         await s.settle(80)
         assert.match(s.text(), GREEN_WORDS, 'the slow answer never landed')
@@ -362,7 +362,7 @@ describe('BJ-ADV — the page-level hazards', () => {
         async (s) => {
           assert.match(s.text(), /we do not know|cannot/i, `${c.name} said nothing useful`)
           assert.ok(
-            s.queryByRole('button', /check again/i),
+            s.queryByRole('button', /ask again/i),
             `${c.name} left the reader with no way to try again`,
           )
           assert.doesNotMatch(s.text(), GREEN_WORDS, `${c.name} rendered green`)

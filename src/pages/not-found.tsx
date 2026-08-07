@@ -14,9 +14,11 @@ export function NotFoundPage() {
     <div className="st-page st-prose">
       <h1>Page not found</h1>
       <p className="st-lede">
-        There is no page at this address. This is a 404 in the status line as well as on the screen
-        — nothing about it says anything, either way, about whether the estate is healthy.
+        This address is not one of ours. The server said 404 as well as this screen, so a link
+        checker and a person reach the same conclusion — and a missing page tells you nothing,
+        either way, about whether the estate is healthy.
       </p>
+      <p>Everything this site does hold:</p>
       <ul className="st-links">
         {NAV.map((route) => (
           <li key={route.path}>

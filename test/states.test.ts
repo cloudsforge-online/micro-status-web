@@ -67,8 +67,8 @@ describe('the words for "we do not know" never imply health or failure', () => {
   it('is not called "Unknown", which reads as a state of the estate', () => {
     const voice = voiceOf('unknown')
     assert.equal(voice.label, 'Not determined')
-    assert.match(voice.sentence, /cannot currently determine status/i)
-    assert.match(voice.sentence, /not a verdict/i)
+    assert.match(voice.sentence, /got no answer back/i)
+    assert.match(voice.sentence, /not a claim either way/i)
   })
 
   it('does not describe an unknown with any word used for a healthy state', () => {

@@ -8,12 +8,38 @@
   `status` is a real key in the registry (ui/packages/ui/src/surfaces.ts) and it has its own
   accent block (ui/packages/ui/src/tokens.css) — the chart `good` step, shared with
   Beacon. It is the warm substrate because this page is the company's own voice, not a product's.
+
+  data-cf-scheme is the third of the three, added with @cloudsforge/ui 1.1. `auto` follows the
+  reader's operating system; `light` and `dark` force one. It is set here, statically, for the same
+  reason the other two are — a page that paints before the attribute lands flashes the default and
+  then changes colour.
+
+  IT MATTERS MORE HERE THAN ANYWHERE. This is the page somebody opens when they think something is
+  broken, frequently on a phone, outdoors, on whatever brightness the phone chose. A page that
+  ignores the reader's scheme is a page they have to squint at while trying to establish whether
+  their money is safe. `src/styles.css` used to pin the whole document dark with a `color-scheme`
+  declaration in its `body` rule; that is gone, and the two lines below are what replace it.
 -->
-<html lang="en-GB" data-cf-product="status" data-cf-substrate="warm">
+<html lang="en-GB" data-cf-product="status" data-cf-substrate="warm" data-cf-scheme="auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="colour-scheme" content="dark light" />
+    <!--
+      `color-scheme`, AND NOT `colour-scheme`, WHICH IS WHAT THIS FILE SAID.
+
+      The estate spells in British English everywhere it writes prose, and that habit reached a
+      place where it is not prose: `color-scheme` is a name from the HTML standard, the browser
+      matches it literally, and `colour-scheme` matched nothing. So this tag has been inert since
+      the surface shipped — the browser was drawing form controls and scrollbars from its own
+      default rather than from the page's declaration. The same typo is in three sibling shells and
+      is being fixed in each.
+
+      What it does now that it works: it tells the browser which control sets this document can be
+      drawn with, while `data-cf-scheme` on <html> above tells @cloudsforge/ui which palette to
+      resolve. Both are needed — the token layer cannot restyle a native scrollbar, and this tag
+      cannot pick an accent.
+    -->
+    <meta name="color-scheme" content="dark light" />
     <!--
       The build that produced this bundle. Stamped by the Dockerfile, read by src/lib/obs.ts, and
       the reason an error report can be pinned to the deploy that introduced it. It is an identity
@@ -21,15 +47,79 @@
     -->
     <meta name="cf-release" content="dev" />
     <!--
-      Never indexed as a snapshot. A status page's content is true for about a minute; a cached
-      copy in a search result showing "All systems operational" during an outage is worse than no
-      result at all. The page itself is crawlable — only the snapshot is refused.
+      ══════════════════════════════════════════════════════════════════════════════════════════
+      THIS SURFACE IS INDEXED, AND IT IS THE ONLY ONE OF THE FOUR CONSOLES IN THIS BATCH THAT IS.
+
+      The registry is what decides it, not this file. `robotsDirective()`
+      (ui/packages/ui/src/seo.ts) reads two fields and nothing else: `servesUi`, and
+      `adminOnly`. `admin`, `lantern` and `beacon` all carry `adminOnly: true` and therefore
+      resolve to `noindex, nofollow` — publishing an operator console's address, name and purpose
+      to anyone searching is reconnaissance handed over for free. **`status` carries neither.**
+      Its row (ui/packages/ui/src/surfaces.ts) reads "Beacon's public face, pre-auth and
+      redacted" with the blurb "Public status, no account needed", and `sitemap.ts` lists
+      `status.$host` in the estate sitemap that `site/nginx.conf` serves.
+
+      That is correct and it must not be "tidied" into matching its three siblings. The whole
+      value of a public status page is that somebody who cannot reach the platform can still find
+      this page — and the way a person who is not already holding the link finds it is by
+      searching for it. A `noindex` here would break the page's only job at exactly the moment it
+      matters.
+
+      ── THE THREE EXTRA DIRECTIVES, WHICH ARE NOT THE SAME DECISION ────────────────────────────
+
+      `index, follow` invites the crawler. `noarchive, nosnippet, max-snippet:0` refuse the
+      SNAPSHOT, and that refusal is this surface's own and predates the shared layer:
+
+        A status page's content is true for about a minute. A search result reading
+        "All systems operational" — scraped last Tuesday, rendered underneath the link during
+        today's outage — is worse than no result at all, because it is a confident answer from a
+        source the reader trusts, and it is wrong.
+
+      So the page is findable and the page's WORDS are not quotable. Both halves are kept.
+
+      ── WHY THE STRING IS NOT TYPED TWICE ──────────────────────────────────────────────────────
+
+      This tag and the one `applyHead()` writes at runtime have to agree: a crawler that does not
+      execute JavaScript reads THIS document and nothing else, and a crawler that does execute it
+      reads the runtime one. `src/lib/meta.ts` exports `ROBOTS` as the single spelling, passes it
+      to `surfaceMeta()` as the documented per-surface override
+      (ui/packages/ui/src/seo.ts), and `test/meta.test.ts` reads this file and fails if
+      the two have drifted — which is exactly the failure `site/index.html` records having shipped
+      once already, in its own head, for as long as it took somebody to open the served HTML.
+      ══════════════════════════════════════════════════════════════════════════════════════════
     -->
-    <meta name="robots" content="noarchive, nosnippet, max-snippet:0" />
+    <meta name="robots" content="index, follow, noarchive, nosnippet, max-snippet:0" />
     <meta
       name="description"
       content="Live availability of the CloudsForge estate, by product group. No account needed."
     />
+    <!--
+      THE GOOGLE ANALYTICS MEASUREMENT ID, AND NOT THE GOOGLE ANALYTICS TAG.
+
+      There is deliberately no `<script src="googletagmanager.com/gtag/js">` in this file and there
+      must never be one. The stock snippet fetches a third-party script and sets `_ga` on load —
+      before any banner has been drawn, let alone answered — and under ePrivacy Art. 5(3) an
+      analytics cookie set before consent is a violation that a banner underneath it does not cure.
+      `@cloudsforge/ui/consent` injects the tag from exactly one place: the Accept button.
+
+      ── AND IT IS ON THIS SURFACE ALONE, OF THE FOUR IN THIS BATCH ─────────────────────────────
+
+      `admin`, `lantern` and `beacon` deliberately carry no measurement ID, and the reason is
+      written in each of their shells. The short version: they are `adminOnly` operator consoles,
+      two of them put estate identifiers in the address (`admin`'s `/approvals/:id` and
+      `/backups/:id`, `lantern`'s `/request?id=…`), and GA4 reports `page_location` — so a hit
+      from those consoles would ship approval, backup and request ids to a third party. This page
+      has three static addresses, no session, no identifiers and no account concept at all, so it
+      is the one surface here where a page-view count is a page-view count.
+
+      It is a meta tag rather than a build-time environment variable because
+      test/no-build-time-config.test.ts greps for those and fails the build — an artefact with an
+      environment frozen into it is not the artefact that passed CI. The ID is an identity rather
+      than a configuration: it names the property, it does not tell the bundle where it is running.
+      An absent or empty value means analytics is simply off, which is what a local `pnpm dev`
+      gets, and `analyticsAllowedHere()` refuses every non-public hostname on top of that.
+    -->
+    <meta name="cf-analytics" content="G-NB8DNLTKZQ" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="/favicon-192x192.png" />

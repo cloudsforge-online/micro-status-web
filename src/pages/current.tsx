@@ -41,10 +41,10 @@ export function CurrentPage() {
         <Observed at={page.asOf} />
         <p className="st-hero__actions">
           <button type="button" className="st-btn" onClick={feed.refresh} disabled={feed.loading}>
-            {feed.loading ? 'Checking…' : 'Check again'}
+            {feed.loading ? 'Asking…' : 'Ask again'}
           </button>
           {page.showingLastGood && (
-            <span className="st-hero__stale">Showing the last answer we received.</span>
+            <span className="st-hero__stale">This is the last reading we hold, not a live one.</span>
           )}
         </p>
       </section>
@@ -71,16 +71,17 @@ export function CurrentPage() {
  */
 function NothingToShow() {
   return (
-    <section className="st-void" aria-label="No status available">
-      <h2>Nothing here is a verdict</h2>
+    <section className="st-void" aria-label="No reading available">
+      <h2>No reading, and no guess</h2>
       <p>
-        We hold no status document we are willing to show you. Rather than draw an empty page in
-        the colour of good news, we are saying plainly: we do not know.
+        Our status service has not handed us a document we would stand behind, so there is no grid
+        below and no verdict above. The alternative was to paint the page in the colour of good
+        news and hope. We do not know.
       </p>
       <p>
-        If you are checking because something you use is not working, treat that as the more
-        reliable signal. This page failing does not mean the thing you are using has failed — and
-        it certainly does not mean it is healthy.
+        You came here with a question, and the honest next step is to answer it somewhere else. If
+        a thing you use has stopped working, believe the thing you use. Our failure to report is
+        evidence about our monitoring, and about nothing else.
       </p>
     </section>
   )
@@ -95,6 +96,10 @@ function ActiveIncidents({ incidents }: { incidents: readonly PublicIncident[] }
       <h2 id="active">
         {open.length === 1 ? 'One open incident' : `${open.length} open incidents`}
       </h2>
+      <p className="st-quiet">
+        Open means no operator has declared it finished. The work may already be done and the
+        record not yet closed.
+      </p>
       {[...open]
         .sort((a, b) => b.openedAt.localeCompare(a.openedAt))
         .map((incident, index) => (
@@ -109,6 +114,10 @@ function Maintenance({ doc }: { doc: PublicStatus }) {
   return (
     <section className="st-section" aria-labelledby="maintenance">
       <h2 id="maintenance">Scheduled maintenance</h2>
+      <p className="st-quiet">
+        Work we chose to do, at a time we chose. Expect these groups to be interrupted inside the
+        windows below. Times are UTC.
+      </p>
       <ul className="st-windows">
         {doc.maintenance.map((window) => (
           <li key={`${window.group}-${window.startsAt}`} className="st-window">
@@ -140,8 +149,8 @@ function Groups({ doc }: { doc: PublicStatus }) {
       <section className="st-section" aria-labelledby="groups">
         <h2 id="groups">Product groups</h2>
         <p className="st-quiet">
-          The answer contained no product groups. That is not "everything is fine" — it is an
-          answer we cannot read anything into, which is why the state above says so.
+          The document arrived with no product groups inside it. Read that as a hole in the answer
+          rather than as a quiet estate — which is why the verdict above declines to call it.
         </p>
       </section>
     )
@@ -154,6 +163,10 @@ function Groups({ doc }: { doc: PublicStatus }) {
   return (
     <section className="st-section" aria-labelledby="groups">
       <h2 id="groups">Product groups</h2>
+      <p className="st-quiet">
+        One row per group of services. A row takes the state of whichever part of it is worst, and
+        the strip beside it is the last ninety days, a bar a day.
+      </p>
       <ul className="st-groups">
         {doc.groups.map((group) => (
           <li key={group.group} className="st-group">
@@ -166,7 +179,7 @@ function Groups({ doc }: { doc: PublicStatus }) {
           </li>
         ))}
       </ul>
-      <Observed at={doc.generatedAt} verb="All groups observed" />
+      <Observed at={doc.generatedAt} verb="Every group above observed" />
     </section>
   )
 }

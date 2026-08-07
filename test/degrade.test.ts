@@ -34,14 +34,14 @@ function healthy(): PublicStatus {
 
 /** Every non-ok outcome `fetchPublicStatus` can return. */
 const FAILURES: readonly Exclude<StatusOutcome, { kind: 'ok' }>[] = [
-  { kind: 'unreachable', detail: 'the request timed out' },
-  { kind: 'unreachable', detail: 'the request could not be made' },
+  { kind: 'unreachable', detail: 'the request ran out of time' },
+  { kind: 'unreachable', detail: 'the connection could not be opened' },
   { kind: 'refused', status: 401, requestId: 'req-1' },
   { kind: 'refused', status: 403, requestId: null },
   { kind: 'refused', status: 500, requestId: 'req-2' },
   { kind: 'refused', status: 503, requestId: null },
-  { kind: 'unreadable', detail: 'the response was not JSON' },
-  { kind: 'unreadable', detail: 'the document carried no readable observation time' },
+  { kind: 'unreadable', detail: 'the reply was not in the format we expect' },
+  { kind: 'unreadable', detail: 'the document arrived with no observation time on it' },
 ]
 
 /**
@@ -69,7 +69,7 @@ describe('no failure branch can produce green', () => {
       const page = pageState(outcome, null, null)
       assert.equal(page.state, 'unknown', `${outcome.kind} produced ${page.state}`)
       assert.equal(page.document, null)
-      assert.equal(page.headline, 'We cannot currently determine status.')
+      assert.equal(page.headline, 'We do not know the state of our systems.')
     }
   })
 
@@ -118,10 +118,10 @@ describe('no failure branch can produce green', () => {
   })
 
   it('says which failure it was, because the four are not the same thing to a reader', () => {
-    assert.match(pageState(FAILURES[0]!, null, null).detail, /could not reach/i)
+    assert.match(pageState(FAILURES[0]!, null, null).detail, /never answered/i)
     assert.match(pageState(FAILURES[2]!, null, null).detail, /HTTP 401/)
     assert.match(pageState(FAILURES[2]!, null, null).detail, /req-1/)
-    assert.match(pageState(FAILURES[6]!, null, null).detail, /could not read/i)
+    assert.match(pageState(FAILURES[6]!, null, null).detail, /could not make sense of/i)
   })
 
   it('the pre-first-answer state is unknown and says nothing is a verdict yet', () => {
@@ -129,7 +129,7 @@ describe('no failure branch can produce green', () => {
     assert.equal(page.state, 'unknown')
     assert.equal(page.document, null)
     assert.equal(page.asOf, null)
-    assert.match(page.detail, /verdict until it answers/i)
+    assert.match(page.detail, /counts as a verdict until that answer lands/i)
   })
 })
 
@@ -137,7 +137,7 @@ describe('a good document is not treated as a failure', () => {
   it('reports operational, with the observation time, for a complete healthy document', () => {
     const page = pageState({ kind: 'ok', status: healthy(), receivedAt: '2026-07-31T09:00:01.000Z' }, null, null)
     assert.equal(page.state, 'operational')
-    assert.equal(page.headline, 'All systems operational')
+    assert.equal(page.headline, 'Nothing we watch is failing.')
     assert.equal(page.asOf, '2026-07-31T09:00:00.000Z')
     assert.equal(page.showingLastGood, false)
     assert.ok(page.document)
@@ -161,13 +161,13 @@ describe('a good document is not treated as a failure', () => {
     assert.ok(doc)
     const page = pageState({ kind: 'ok', status: doc, receivedAt: 'x' }, null, null)
     assert.equal(page.state, 'outage')
-    assert.equal(page.headline, 'Active outage')
+    assert.equal(page.headline, 'Something has stopped answering.')
   })
 
   it('reports degraded and maintenance with their own headlines', () => {
     for (const [state, headline] of [
-      ['degraded', 'Some systems degraded'],
-      ['maintenance', 'Planned maintenance in progress'],
+      ['degraded', 'Something is answering, but not properly.'],
+      ['maintenance', 'Scheduled work is running.'],
     ] as const) {
       const doc = parseStatus({
         generatedAt: '2026-07-31T09:00:00.000Z',

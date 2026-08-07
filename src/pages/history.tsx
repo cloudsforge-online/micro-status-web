@@ -26,23 +26,28 @@ export function HistoryPage() {
 
       {doc === null ? (
         <section className="st-void">
-          <h2>We hold no history to show</h2>
+          <h2>The incident list did not reach us</h2>
           <p>{page.detail}</p>
+          <p>
+            Nothing has been deleted. The record sits with our status service, and this page will
+            draw it as soon as that service answers.
+          </p>
           <Observed at={page.asOf} />
         </section>
       ) : (
         <>
           <p className="st-lede">
-            Every incident our status service published in its current window, newest first. An
-            incident appears here whether or not anybody wrote a public update for it.
+            Newest first, this is every incident inside the window our status service publishes.
+            An incident is listed whether or not anybody wrote a public update on it. Anything
+            older than that window is absent, and this page has no way to tell you what.
           </p>
-          <Observed at={page.asOf} verb="This list observed" />
+          <Observed at={page.asOf} verb="This incident list observed" />
 
           {doc.incidents.length === 0 ? (
             <p className="st-quiet">
-              No incidents in the published window. That is the absence of a record, which is not
-              quite the same claim as the absence of an event — an incident nobody opened does not
-              appear here.
+              Nobody opened an incident inside this window. What you are reading is the state of
+              the record, which is a narrower claim than the state of the world — an event no
+              operator logged never reaches this list.
             </p>
           ) : (
             <ol className="st-history">

@@ -40,29 +40,26 @@ body {
   font-family: var(--cf-font-sans);
   font-size: var(--cf-text-lg);
   line-height: 1.6;
-  color-scheme: dark;
   -webkit-font-smoothing: antialiased;
 }
 
-/* --- the skip link ------------------------------------------------- */
+/* `color-scheme: dark` was on the rule above, and it had to go for the light scheme to work at
+   all. It is a browser-level declaration: it pins the native form controls, the scrollbars and the
+   focus ring to the dark set regardless of what the token layer resolves, so a reader on
+   `data-cf-scheme="light"` — or on `auto` in a light environment, which is the default this
+   surface now ships — would have got a light page with dark scrollbars.
 
-.st-skip {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  z-index: 100;
-  padding: var(--cf-space-sm) var(--cf-space-xl);
-  background: var(--cf-accent);
-  color: var(--cf-accent-ink);
-  border-radius: 0 0 var(--cf-radius) 0;
-  font-weight: 600;
-}
+   The declaration is not lost, it has moved to where it can follow the reader: `index.html` says
+   `<meta name="color-scheme" content="dark light">`, which offers the browser BOTH sets and lets
+   it pick, and `data-cf-scheme` on <html> tells @cloudsforge/ui which palette to resolve. The two
+   are a pair — the token layer cannot restyle a native scrollbar, and the meta tag cannot pick an
+   accent. See tokens.css. */
 
-/* A skip link that stays hidden when focused is worse than none: the reader activates it and
-   cannot tell whether anything happened. */
-.st-skip:focus {
-  left: 0;
-}
+/* `.st-skip` and `.st-skip:focus` were here. The skip link is `<SkipLink>` from @cloudsforge/ui
+   now, styled by `.cf-skip` in ui.css, so every surface in the estate gets the one this page had
+   and sixteen of them did not. The shared rule reveals itself with a transform rather than by
+   moving `left` from -9999px, which is the better mechanism for the same reason this file gave for
+   revealing it at all. */
 
 /* --- chrome -------------------------------------------------------- */
 
@@ -215,19 +212,53 @@ body {
   line-height: 1;
 }
 
+/* ── THE TEXT STEP, AND NOT THE CHART STEP ─────────────────────────────────────────────────────
+ *
+ * These three set `color:`, and a glyph rendered from a character IS text as far as a browser and
+ * a contrast meter are concerned. `--cf-viz-crit` measures 3.38:1 on the tightest ground this
+ * system composes on — below the 4.5:1 AA floor, and the worst of the three, because the crit hue
+ * is the darkest of them. @cloudsforge/ui 1.1 measured it and shipped a derived step for exactly
+ * this case: `--cf-critical-text`, at 4.63:1, the same chromaticity lifted in linear light
+ * (tokens.css). Its own `.cf-status--critical` in ui.css uses that step for `color:` while
+ * keeping the plain token for the border and the wash, and this file now does the same.
+ *
+ * `--cf-good-text` (5.41:1, tokens.css) and `--cf-warn-text` (6.91:1, tokens.css) already
+ * clear the floor unaided and resolve to the same values as their chart steps in the dark scheme.
+ * They are named here anyway rather than left as `--cf-viz-*`, because the RULE is what has to be
+ * legible to the next reader — "`color:` takes the text step" is checkable at a glance, whereas
+ * "`color:` takes the text step except where the chart step happens to measure high enough" is a
+ * measurement somebody has to redo. It also makes the light scheme correct for free: there the
+ * three text steps are genuinely different colours (tokens.css).
+ *
+ * This page is where that matters most. It is read under stress, often on a phone, often outdoors,
+ * by somebody who has just been told something is broken — and the mark that has to be legible at
+ * a glance is precisely the one that was failing.
+ *
+ * The BORDERS and the FILLS below keep `--cf-viz-*`. They are measured against the 3:1 non-text
+ * floor, they clear it, and in the light scheme `--cf-viz-crit` deliberately keeps the dark
+ * scheme's value because it measures 3.95:1 on the light panel unaided (tokens.css).
+ * Re-pointing them would change a colour that is already correct.
+ *
+ * NO LITERAL VALUE IS SPELLED IN THIS COMMENT, AND THAT IS ENFORCED. `test/states.test.ts`
+ * greps the whole file — comments included — for a hex literal and fails on one. It is a blunt
+ * rule and it is the right one here: a hex in a comment is how a hex in a declaration gets written
+ * next, and this is the page where an off-palette colour is a correctness problem rather than a
+ * taste one. The ratios above are the part worth recording; the values behind them belong to
+ * tokens.css, which measures them.
+ * ─────────────────────────────────────────────────────────────────────────────────────────────── */
 .st-chip--good .st-chip__glyph,
 .st-dot--good {
-  color: var(--cf-viz-good);
+  color: var(--cf-good-text);
 }
 
 .st-chip--warn .st-chip__glyph,
 .st-dot--warn {
-  color: var(--cf-viz-warn);
+  color: var(--cf-warn-text);
 }
 
 .st-chip--crit .st-chip__glyph,
 .st-dot--crit {
-  color: var(--cf-viz-crit);
+  color: var(--cf-critical-text);
 }
 
 .st-chip--plan .st-chip__glyph,
@@ -432,10 +463,12 @@ body {
   color: var(--cf-fg-mute);
 }
 
+/* The text step, for the reason given above the chip tones: this is a sentence, not a swatch, and
+   a stale-observation stamp is a sentence a reader has to be able to read. */
 .st-observed--stale,
 .st-observed--ancient,
 .st-observed--none {
-  color: var(--cf-viz-warn);
+  color: var(--cf-warn-text);
 }
 
 .st-observed__note {
@@ -665,6 +698,47 @@ body {
 /* --- narrow viewports ---------------------------------------------- */
 
 @media (max-width: 40rem) {
+  /* ── THE HEADER WRAPS HERE NOW, AND THE WRAP HAD TO BE GIVEN A SHAPE ────────────────────────
+   *
+   * MEASURED, not predicted: driven in Chromium against the built bundle at 375x812, the width of
+   * the phone this page is most often opened on. `.st-head__inner` is 84px tall there and the
+   * navigation has moved onto a second row at y=41.
+   *
+   * It wraps because @cloudsforge/ui 1.1 raised `--cf-text-md` from 0.82rem to 1rem — 13.1px to
+   * 16px — and `--cf-text-md` is the size of `.st-nav__link`. tokens.css argues that change at
+   * 239-241: 13.1px was below every platform's minimum readable body size and it was the token
+   * behind most of the words in the estate. THE REFLOW IS THE POINT AND IS NOT REVERTED. The three
+   * labels are 54, 51 and 122 pixels wide at the new size; with the logo, the rule and the word
+   * STATUS ahead of them they no longer fit one 375px line, and `flex-wrap: wrap` on the container
+   * does the right thing.
+   *
+   * What the wrap did NOT do right is the ONE thing that is a defect rather than a preference.
+   * `.st-nav__link` carries `padding: var(--cf-space-sm) 0` and a 2px bottom border, and with no
+   * vertical padding on the container the wrapped row's bottom sat at 85px — flush against
+   * `.st-head`'s own 1px bottom rule at 84. The current page is marked by that border (see
+   * `.is-current` above) and by nothing else, so the indicator was being drawn on top of the rule
+   * underneath it and had stopped indicating. On a surface whose header IS its entire navigation,
+   * losing "you are here" is not cosmetic.
+   *
+   * So the container gets vertical padding and nothing else changes. `border-box` is global at the
+   * top of this file, so `min-height` still governs and no viewport where the header STILL FITS ON
+   * ONE ROW moves at all — which is why the navigation keeps its `margin-left: auto` here rather
+   * than being given the whole row. `width: 100%` on the navigation would have forced the wrap at
+   * every width below 40rem — the measured threshold is between 480 and 560, so that is 80 pixels
+   * of viewport made two rows taller for nothing — and traded a real defect for a self-inflicted
+   * one.
+   *
+   * Re-measured after the change, at 375, 414, 480, 560, 640, 768 and 1280: wrapped below the
+   * threshold the header is 100px with the navigation row ending at 93, eight pixels clear of the
+   * rule; unwrapped but still inside this query it is 60px rather than 54, which is the padding
+   * doing its job; above the query it is the unchanged 54. `scrollWidth === clientWidth` at every
+   * one of the seven, so nothing overflows sideways at any of them.
+   * ─────────────────────────────────────────────────────────────────────────────────────────── */
+  .st-head__inner {
+    padding-top: var(--cf-space-sm);
+    padding-bottom: var(--cf-space-sm);
+  }
+
   .st-hero__headline {
     font-size: var(--cf-text-3xl);
   }

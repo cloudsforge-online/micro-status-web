@@ -210,7 +210,7 @@ describe('the strip draws ninety bars, and says what it does not know', () => {
     const markup = renderToStaticMarkup(
       createElement(UptimeStrip, { days: buildWindow(group.uptime, '2026-07-31'), group: 'Wallet' }),
     )
-    assert.ok(markup.includes('88 days not measured'))
+    assert.ok(markup.includes('88 days we never measured'))
     // And the percentage is over the two measured days, neither of which was operational.
     assert.ok(markup.includes('0.0% of 2 measured days'))
   })
@@ -246,20 +246,20 @@ describe('an observation stamp is never silently absent', () => {
 
   it('says so in words when there is no observation time, rather than rendering nothing', () => {
     const markup = renderToStaticMarkup(createElement(Observed, { at: null, now: NOW }))
-    assert.ok(markup.includes('Observation time unknown'))
+    assert.ok(markup.includes('No observation time'))
     assert.ok(markup.length > 40)
   })
 
   it('warns when the document is older than we expect', () => {
     const stale = new Date(NOW.getTime() - 20 * 60_000).toISOString()
     const markup = renderToStaticMarkup(createElement(Observed, { at: stale, now: NOW }))
-    assert.ok(markup.includes('older than we expect'))
+    assert.ok(markup.includes('Older than our polling should ever leave it'))
   })
 
   it('says an hour-old document is history rather than status', () => {
     const ancient = new Date(NOW.getTime() - 3 * 60 * 60_000).toISOString()
     const markup = renderToStaticMarkup(createElement(Observed, { at: ancient, now: NOW }))
-    assert.ok(markup.includes('Treat it as history, not as status.'))
+    assert.ok(markup.includes('Read it as a record of that moment'))
   })
 })
 
@@ -291,10 +291,10 @@ describe('the whole page tree constructs, and its first paint is not green', () 
 
   it('renders the current page before any answer, claiming nothing', () => {
     const markup = page('/')
-    assert.ok(markup.includes('Checking'))
+    assert.ok(markup.includes('Asking our status service'))
     assert.ok(markup.includes('Not determined'))
     // The words that would be a lie at this moment.
-    assert.equal(markup.includes('All systems operational'), false)
+    assert.equal(markup.includes('Nothing we watch is failing'), false)
     assert.equal(markup.includes('st-chip--good'), false)
   })
 

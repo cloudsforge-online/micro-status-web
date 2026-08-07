@@ -17,12 +17,22 @@ export function AboutPage() {
       <h1>How we measure</h1>
 
       <p className="st-lede">
-        This page renders one document, produced by our monitoring service and redacted before it
-        leaves it. It is served without an account, without a session and without any dependency on
-        our sign-in system — so that it keeps working when that is the thing that has broken.
+        If something you use is broken, this page tells you whether we already know. It draws one
+        document: our monitoring service builds it, strips out everything private, and hands over
+        what is left. There is no account here, no session, and no tie to our sign-in system — so
+        it keeps answering on the day sign-in is the thing that broke.
+      </p>
+
+      <p>
+        CloudsForge is one platform with several products on it: a wallet, trading, a market,
+        games, and a chain of its own. Everything below applies to all of them.
       </p>
 
       <h2>What the states mean</h2>
+      <p>
+        Five words, and only five. Four of them describe your service. The fifth describes what we
+        managed to find out about it.
+      </p>
       <dl className="st-defs">
         {STATE_ORDER.map((state) => {
           const voice = voiceOf(state)
@@ -40,50 +50,78 @@ export function AboutPage() {
         })}
       </dl>
 
+      <h2>“Not determined” is an answer, not a loading state</h2>
+      <p>
+        When this page cannot get a reading, it has two options: say so, or paint the screen green
+        and hope nobody checks. It says so.
+      </p>
+      <p>
+        “Not determined” means we asked, came back empty-handed, and stopped. The page has
+        finished. Reloading will not turn it into a colour, and waiting will not either.
+      </p>
+      <p>
+        It does not mean your service is down. It does not mean your service is well. It means the
+        measurement is missing, and we would rather hand you a hole than fill it with a guess.
+      </p>
+      <p>
+        A partial answer is still allowed to report a fault — a known outage stays true whatever
+        else went astray. It is never allowed to report health. “Nothing is wrong” is a claim about
+        the absence of faults, and absence is the one thing a partial answer cannot establish.
+      </p>
+
       <h2>The unit is a product group, not a service</h2>
       <p>
-        Every state on this page describes a product group — Account, Wallet, Trading and so on —
-        and never an individual service. A group is as healthy as its unhealthiest part. We do not
-        publish which part that is.
+        Every state here belongs to a product group — Account, Wallet, Trading and the rest — and
+        never to one service inside it. A group takes the state of whichever part of it is worst.
+        Which part that was stays with us.
       </p>
 
       <h2>What we deliberately withhold</h2>
       <p>
-        Per-service latency, error rates, internal service names, replica counts, the names of
-        individual checks, and the error text a failing system produced. Together those are an
-        availability map: a page that tells you which service fell over first tells the same thing
-        to somebody looking for a way in. We would rather have a less impressive page.
+        You will not find per-service latency here, and you will not find error rates, internal
+        service names, replica counts, the names of individual checks, or the error text a failing
+        system printed. Line those up and you have a map of where to push. We would rather run a
+        duller page than draw that map for whoever is looking for it.
       </p>
 
       <h2>Missing is missing</h2>
       <p>
-        A day with no measurement is drawn as a hollow bar and excluded from every percentage, and
-        the number of measured days is printed next to every percentage for that reason. We do not
-        fill gaps with zero and we do not fill them with success.
-      </p>
-
-      <h2>We will not show you green when we do not know</h2>
-      <p>
-        If our status service cannot be reached, refuses, or answers something we cannot read, this
-        page says that it cannot determine status. An incomplete answer is allowed to report a
-        problem — a known outage is still true — but it is never allowed to report health, because
-        "nothing is wrong" is a claim about the absence of problems, and absence is exactly what an
-        incomplete answer cannot establish.
+        A day we did not measure is drawn as a hollow bar and kept out of every percentage. That is
+        why the count of measured days is printed beside every percentage. A gap is never filled
+        with a zero, and it is never filled with a success.
       </p>
 
       <h2>Colour is never the only signal</h2>
       <p>
-        Every state carries a shape and a word as well as a colour, and the uptime bars encode the
-        day's state in their height too. Our own palette measures as little as ΔE 4.6 apart between
-        "operational" and "degraded" for readers with the commonest form of colour blindness, which
-        is a reason to add channels rather than to change the palette.
+        Every state carries a shape and a word alongside its colour, and each bar in a strip
+        encodes its day in height as well as fill. Two of our status hues sit ΔE 4.6 apart for
+        readers with the commonest form of colour blindness — ΔE being the measured distance
+        between two colours, and 4.6 being close enough to read as one colour. The answer to that
+        is more channels, not a repaint.
       </p>
 
       <h2>How current this is</h2>
       <p>
-        The page re-asks once a minute while it is visible, and every figure is printed with the
-        time it was observed, in UTC. If that time is more than a few minutes old we say so beside
-        it — an old document served from a cache is the one way this page can be confidently wrong.
+        While this tab is in front of you, the page asks again once a minute. Every figure prints
+        the moment it was observed, in UTC, so two people on a call quote the same time. If a
+        figure is older than a few minutes we say so beside it — a cached document served as though
+        it were live is the one way this page can be confidently wrong.
+      </p>
+
+      <h2>What an outage here does not touch</h2>
+      <p>
+        This page covers services we run, and services we run can fail. Two parts of CloudsForge do
+        not sit behind them the way the rest does.
+      </p>
+      <p>
+        Foresight settles on chain. It takes your stake in Bitcoin, Ethereum, Litecoin, Solana,
+        XRP, EMBER or any token launched on this chain, and a winner claims the payout straight
+        from the contract — with every CloudsForge server switched off.
+      </p>
+      <p>
+        Mining pays a key we never hold. EMBER can be mined from an ordinary browser tab, and the
+        key it pays goes nowhere near us. Whatever breaks on our side, those earnings were never
+        ours to move.
       </p>
     </div>
   )

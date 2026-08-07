@@ -15,6 +15,16 @@ export interface AppRoute {
   readonly label: string
   /** `<title>`, which is what a browser tab and a shared link show. */
   readonly title: string
+  /**
+   * The meta description, and the Open Graph description with it.
+   *
+   * Added with @cloudsforge/ui 1.1. Before it, all three routes shared the one description typed
+   * into `index.html`, so a link to `/history` pasted into a chat thread previewed as the front
+   * page — the wrong page, at the moment somebody is trying to send a colleague to the right one.
+   * `lib/meta.ts` reads this; `surfaceMeta()` would otherwise compose the registry blurb, which is
+   * correct for `/` and says nothing about the other two.
+   */
+  readonly description: string
   /** Whether it appears in the navigation. All of them do; the field keeps the intent explicit. */
   readonly inNav: boolean
 }
@@ -24,18 +34,24 @@ export const ROUTES: readonly AppRoute[] = [
     path: '/',
     label: 'Current',
     title: 'CloudsForge Status',
+    description:
+      'Whether CloudsForge is working right now, one row per product group. No sign-in, and this page runs apart from the services it reports on.',
     inNav: true,
   },
   {
     path: '/history',
     label: 'History',
     title: 'History — CloudsForge Status',
+    description:
+      'Every incident CloudsForge has published inside the current window, newest first, each one carrying the moment it opened and the updates written for it.',
     inNav: true,
   },
   {
     path: '/about',
     label: 'How we measure',
     title: 'How we measure — CloudsForge Status',
+    description:
+      'What each status word means, what we hold back on purpose, and why a reading we could not take is shown as a gap rather than as a green tick.',
     inNav: true,
   },
 ]
@@ -56,7 +72,31 @@ export const NGINX_SEGMENTS: readonly string[] = ROUTES.filter((route) => route.
 /** The title for an address this app does not own. */
 export const NOT_FOUND_TITLE = 'Page not found — CloudsForge Status'
 
+/** The description for one, which says what the reader is looking at rather than what it is not. */
+export const NOT_FOUND_DESCRIPTION =
+  'No page sits at this address on the CloudsForge status page. The current state, the incident record and how we measure are each one link away.'
+
+/**
+ * Collapse an address to the one spelling this app routes on.
+ *
+ * `/history/` and `/history` are one page. nginx accepts both — `location ~ ^/(history|about)(/|$)`
+ * — and react-router matches both, so without this the trailing-slash spelling would get the
+ * not-found title and, since @cloudsforge/ui 1.1 applies a canonical link, its own canonical URL.
+ * One page with two canonicals is the classic way a page splits its own indexing between them, and
+ * this is the one surface in the batch a crawler is invited to.
+ */
+export function normalise(pathname: string): string {
+  if (!pathname.startsWith('/')) return normalise(`/${pathname}`)
+  const trimmed = pathname.replace(/\/+$/, '')
+  return trimmed === '' ? '/' : trimmed
+}
+
 export function titleFor(pathname: string): string {
-  const match = ROUTES.find((route) => route.path === pathname)
+  const match = ROUTES.find((route) => route.path === normalise(pathname))
   return match ? match.title : NOT_FOUND_TITLE
+}
+
+export function descriptionFor(pathname: string): string {
+  const match = ROUTES.find((route) => route.path === normalise(pathname))
+  return match ? match.description : NOT_FOUND_DESCRIPTION
 }
