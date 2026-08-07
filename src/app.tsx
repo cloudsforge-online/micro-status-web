@@ -11,6 +11,7 @@
  * three ever disagree.
  */
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { ScrollToTop } from './components/scroll-to-top.tsx'
 import { AppShell } from './components/shell.tsx'
 import { AboutPage } from './pages/about.tsx'
 import { CurrentPage } from './pages/current.tsx'
@@ -20,6 +21,7 @@ import { NotFoundPage } from './pages/not-found.tsx'
 export function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<CurrentPage />} />
