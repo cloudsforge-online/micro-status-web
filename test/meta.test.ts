@@ -244,7 +244,7 @@ describe('applying it writes into a real document', () => {
     assert.equal(html.getAttribute('lang'), 'en-GB')
     assert.equal(
       win.document.querySelector('meta[name="cf-analytics"]')?.getAttribute('content'),
-      'G-NB8DNLTKZQ',
+      'G-ZFBLKK519K',
     )
   })
 })
@@ -285,7 +285,7 @@ describe('analytics is a measurement id and never a tag', () => {
     // A meta tag rather than a build-time variable, for the reason no-build-time-config.test.ts
     // gives: an artefact with an environment frozen into it is not the artefact that passed CI. The
     // id is an identity — it names the property, it does not say where the bundle is running.
-    assert.equal(staticMeta('cf-analytics'), 'G-NB8DNLTKZQ')
+    assert.equal(staticMeta('cf-analytics'), 'G-ZFBLKK519K')
   })
 
   it('is checked against files that really do discuss the tag in prose', () => {
