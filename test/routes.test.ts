@@ -184,4 +184,32 @@ describe('this bundle has no authentication in it at all', () => {
   it('does not mount the shared bar, which would offer a sign-in that leads nowhere', () => {
     assert.equal(code('src/components/shell.tsx').includes('<CloudsForgeBar'), false)
   })
+
+  /**
+   * AND IT DOES NOT MOUNT THE BROWSER MINING CONTROL EITHER.
+   *
+   * The design system grew one, and it went into the chrome of every other surface in the estate
+   * on 2026-08-10 because the owner reported that starting a browser miner was "hidden deep in
+   * mining page". This is the one surface it is deliberately left out of, and the reason wants
+   * writing down where the next estate-wide rollout will read it — otherwise the absence looks
+   * like an oversight and gets closed.
+   *
+   * Two arguments, and either is sufficient:
+   *
+   *   - The likeliest reason somebody is on this page is that something is down. The control is an
+   *     anchor to `hub.<apex>`, a surface whose state this page may at that very moment be
+   *     reporting as an outage. That is the same dead end the shared bar's sign-in would be, one
+   *     origin along, and it is the argument the whole shell rests on.
+   *   - It would be the only control on the page that is not about the estate's health. A status
+   *     page that advertises is a status page people trust slightly less, and the trust is the
+   *     entire product.
+   *
+   * The mining control does not appear in the estate's own account of what the chrome contains
+   * without a decision being made about it, which is what this test forces.
+   */
+  it('does not offer browser mining, on the one page read during an outage', () => {
+    const shell = code('src/components/shell.tsx')
+    assert.equal(shell.includes('<MiningControl'), false)
+    assert.equal(/miningOnHub/.test(shell), false)
+  })
 })
