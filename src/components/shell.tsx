@@ -16,6 +16,19 @@
  * concept at all: no token storage, no refresh, no `AuthProvider`, no `ProtectedRoute`. The logo
  * still links to the marketing site through `cloudsforgeHosts()`, so brand continuity survives
  * without importing the thing that can break.
+ *
+ * ── AND THE SAME ANSWER FOR THE BROWSER MINING CONTROL ────────────────────────────────────────
+ *
+ * The design system grew `MiningControl`, and on 2026-08-10 it went into the chrome of every other
+ * surface in the estate: the owner reported that starting a browser miner was "hidden deep in
+ * mining page", and the fix was to put it beside the account everywhere. It is deliberately not
+ * here. Away from Forge Hub the control is an anchor to `hub.<apex>` — a surface whose state this
+ * page may at that moment be reporting as an outage — so it is the same dead end as the sign-in,
+ * one origin along. It would also be the only control on the page that is not about the estate's
+ * health, and a status page that advertises is a status page people trust slightly less.
+ *
+ * `test/routes.test.ts` pins the absence so that the next estate-wide rollout has to answer this
+ * paragraph rather than assume nobody thought about it.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
 import {
