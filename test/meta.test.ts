@@ -347,7 +347,10 @@ describe('the chrome is ordered for a keyboard', () => {
     // `MainRegion` carries `tabIndex={-1}` and owns `MAIN_ID`, so the link and its target cannot
     // disagree. A bare `<main id="main">` was half the pattern: following the link scrolled the
     // page, left focus on the link, and sent the next Tab back into the header.
-    assert.match(markup, /<MainRegion[^>]*>\s*<Outlet \/>\s*<\/MainRegion>/)
+    // The Outlet carries `key={viewed}` since micro-org#459 — remounting the page tree is how a
+    // network switch makes the page re-read itself from the other estate — so the pattern allows
+    // props on it. What it still pins is that the outlet is INSIDE MainRegion and alone there.
+    assert.match(markup, /<MainRegion[^>]*>\s*<Outlet[^>]*\/>\s*<\/MainRegion>/)
     assert.equal(markup.includes('<main'), false, 'a bare <main> is back beside MainRegion')
   })
 
