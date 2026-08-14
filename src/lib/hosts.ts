@@ -35,6 +35,7 @@
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  */
 import { cloudsforgeHosts, type CloudsForgeHosts, type SurfaceKey } from '@cloudsforge/ui'
+import { viewedHosts } from './viewed.ts'
 
 /** The surface this application IS. Matches `data-cf-product` in index.html. */
 export const PRODUCT: SurfaceKey = 'status'
@@ -69,9 +70,18 @@ export function hosts(): CloudsForgeHosts {
   return cloudsforgeHosts()
 }
 
-/** Beacon's base, resolved now. Call it per request; never cache it in a module constant. */
+/**
+ * Beacon's base, resolved now. Call it per request; never cache it in a module constant.
+ *
+ * `viewedHosts()` rather than `cloudsforgeHosts()` is the in-place network view (micro-org#459).
+ * It returns the map it was given, unchanged, until the reader picks the other network in the bar.
+ * This is the one frontend with no `CloudsForgeBar` — see `components/shell.tsx`, which mounts its
+ * own switcher for the same reason it writes its own header: a status page must be readable when
+ * the rest of the estate is not. Both networks' status boards are worth reading precisely when
+ * something is wrong, so this surface views like the other eighteen.
+ */
 export function statusBase(): string {
-  return resolveStatusBase(pageOrigin(), cloudsforgeHosts())
+  return resolveStatusBase(pageOrigin(), viewedHosts())
 }
 
 /** The page origin, or a stable placeholder when there is no document (tests, prerender). */
