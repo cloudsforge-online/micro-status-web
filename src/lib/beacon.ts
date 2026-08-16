@@ -89,8 +89,8 @@ export async function fetchPublicStatus(signal?: AbortSignal): Promise<StatusOut
       // systems. Our own status service never answered" while the service it could not reach was
       // answering 200 with `state: operational`.
       //
-      // The three variants, in a real Chromium on the live estate, from an
-      // `https://status.cloudsforge.online` document reading `beacon-testnet.<apex>`, 2026-08-16:
+      // The three variants, in a real Chromium on the live estate, from a `status.<apex>`
+      // document reading `beacon-testnet.<apex>`, on 2026-08-16:
       //
       //   cache-control: no-cache header   TypeError: Failed to fetch   (blocked at preflight)
       //   cache: 'no-store'                200 — one GET, no preflight
