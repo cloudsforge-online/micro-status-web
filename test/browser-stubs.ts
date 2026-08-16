@@ -129,6 +129,16 @@ export interface FetchStub {
    * the recorded headers, so without this field the test would silently prove nothing.
    */
   credentials: (RequestCredentials | undefined)[]
+  /**
+   * The `cache` mode of each call, in order.
+   *
+   * Recorded for the same reason as `credentials`, and since 2026-08-16 for a second one: asking
+   * the browser not to serve a cached status document is now done through this field rather than
+   * through a `cache-control` REQUEST HEADER, because that header is not CORS-safelisted and made
+   * the cross-environment read preflighted — see `src/lib/beacon.ts`. Without this field the
+   * assertion that the page still refuses a cached copy would have nowhere to look.
+   */
+  cacheModes: (RequestCache | undefined)[]
   restore: () => void
 }
 
@@ -140,6 +150,7 @@ export function installFetch(
   const original = globalThis.fetch
   const calls: FetchCall[] = []
   const credentials: (RequestCredentials | undefined)[] = []
+  const cacheModes: (RequestCache | undefined)[] = []
 
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = (init?.headers ?? {}) as Record<string, string>
@@ -151,6 +162,7 @@ export function installFetch(
     }
     calls.push(call)
     credentials.push(init?.credentials)
+    cacheModes.push(init?.cache)
     trace?.push(`fetch:${call.url}`)
     return handler(call)
   }) as typeof fetch
@@ -158,6 +170,7 @@ export function installFetch(
   return {
     calls,
     credentials,
+    cacheModes,
     restore() {
       globalThis.fetch = original
     },

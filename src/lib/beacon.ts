@@ -19,7 +19,9 @@
  *     asserts the outgoing URL and method rather than the parsed response, for that reason.
  *   * **It answers `cache-control: no-store`** (`server.ts`). This client asks for the same,
  *     because a status page served from a cache is a status page that can be wrong for the
- *     duration of a TTL.
+ *     duration of a TTL — but it asks through the request's `cache` MODE and not through a
+ *     `cache-control` request header, which is not a stylistic preference. See
+ *     `fetchPublicStatus` for the measurement that forced the distinction.
  * ══════════════════════════════════════════════════════════════════════════════════════════════
  *
  * **THE OUTCOME IS A UNION, NOT AN EXCEPTION.** Every caller has to name what it does about a
@@ -70,12 +72,40 @@ export async function fetchPublicStatus(signal?: AbortSignal): Promise<StatusOut
   try {
     const res = await fetch(url, {
       method: 'GET',
-      headers: {
-        accept: 'application/json',
-        // Mirrors what the route already answers with (`server.ts`). Belt and braces: an
-        // intermediary that ignores the response header may still honour the request one.
-        'cache-control': 'no-cache',
-      },
+      headers: { accept: 'application/json' },
+      // ══════════════════════════════════════════════════════════════════════════════════════
+      // NO CACHED COPY — SAID IN THE ONE WAY THAT SURVIVES A CROSS-ORIGIN READ.
+      //
+      // This was a `cache-control: no-cache` REQUEST HEADER, described here as belt and braces
+      // against an intermediary that ignores the `cache-control: no-store` the route already
+      // answers with (`beacon/src/server.ts`). The braces cost the belt.
+      //
+      // `cache-control` is not on the browser's CORS-safelisted request-header list, so sending
+      // it cross-origin makes the request PREFLIGHTED — and the estate's one CORS allowlist
+      // (`deploy/gateway/dynamic/policy.yml`, `cf-cors`) does not name it. Measured on the live
+      // gateway: `access-control-allow-headers: content-type, authorization, x-request-id,
+      // traceparent, tracestate, baggage, idempotency-key`. So the browser refused the read
+      // before Beacon ever saw it, and this page told a reader "We do not know the state of our
+      // systems. Our own status service never answered" while the service it could not reach was
+      // answering 200 with `state: operational`.
+      //
+      // The three variants, in a real Chromium on the live estate, from a `status.<apex>`
+      // document reading `beacon-testnet.<apex>`, on 2026-08-16:
+      //
+      //   cache-control: no-cache header   TypeError: Failed to fetch   (blocked at preflight)
+      //   cache: 'no-store'                200 — one GET, no preflight
+      //   neither                          200 — one GET, no preflight
+      //
+      // The mode says the same thing to the browser's own cache and says it more strongly — it
+      // refuses the cache in both directions rather than asking for revalidation — and it costs
+      // no preflight, because the `cache-control` and `pragma` the user agent then appends are
+      // added after the CORS decision and are not CORS-unsafe request-header names.
+      //
+      // WHY THIS WAS INVISIBLE FOR AS LONG AS IT WAS: the serving estate's own read is RELATIVE
+      // (`hosts.ts` returns `''`), so it is same-origin and is never preflighted at all. Only the
+      // OTHER estate's read is cross-origin, and that read only exists since the combined view.
+      // ══════════════════════════════════════════════════════════════════════════════════════
+      cache: 'no-store',
       // ══════════════════════════════════════════════════════════════════════════════════════
       // NO CREDENTIALS, EVER. The route is pre-auth (`server.ts`), so a cookie or a bearer
       // buys this page nothing — and sending one would make the most-linked, least-trusted page
