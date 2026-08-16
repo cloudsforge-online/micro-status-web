@@ -116,11 +116,62 @@ describe('the request carries no credential of any kind', () => {
     assert.equal(fetchStub.credentials[0], 'omit')
   })
 
-  it('asks for JSON and for no cached copy', async () => {
+  it('asks for JSON, and for no cached copy through the request MODE', async () => {
+    // This asserted `headers['cache-control'] === 'no-cache'` until 2026-08-16. See the block
+    // below, and `src/lib/beacon.ts`: that header is what made the cross-environment read
+    // impossible, and the refusal of a cached document is unchanged — it is stated on the
+    // request rather than in a header the browser has to ask permission to send.
     await fetchPublicStatus()
-    const headers = onlyCall().headers
-    assert.equal(headers['accept'], 'application/json')
-    assert.equal(headers['cache-control'], 'no-cache')
+    assert.equal(onlyCall().headers['accept'], 'application/json')
+    assert.equal(fetchStub.cacheModes[0], 'no-store')
+  })
+})
+
+/**
+ * THE READ IS A *SIMPLE* REQUEST, AND ON THIS PAGE THAT IS A FUNCTIONAL REQUIREMENT.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * Since the combined view, a reader on `status.cloudsforge.online` can switch to Testnet, and this
+ * page then reads `beacon-testnet.<apex>` — CROSS-ORIGIN, from a mainnet document. Every header
+ * outside the browser's CORS safelist turns that into a preflight, and a preflight is a permission
+ * the gateway grants by NAME: `deploy/gateway/dynamic/policy.yml` lists seven header names and
+ * refuses everything else.
+ *
+ * That refusal is silent in the worst possible way. Traefik does not log it, Beacon never sees the
+ * request, nothing in the estate records it, and what a reader gets is this page's own
+ * `unreachable` copy — "We do not know the state of our systems" — over a service that is up. It
+ * shipped, it was measured on 2026-08-16, and it made the estate's most-linked page report an
+ * outage that was its own request header.
+ *
+ * The estate has now made this mistake twice: `idempotency-key` on foresight's deploy route
+ * (`deploy/gateway/dynamic/policy.yml`) and `cache-control` here. The two fixes went in opposite
+ * directions on purpose — foresight's header is REQUIRED by the server, so the allowlist had to
+ * grow; this one is read by nobody, so it went away.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ */
+describe('nothing on this request makes the browser ask permission first', () => {
+  /** The CORS-safelisted request-header names, per the Fetch standard. */
+  const SAFELISTED = ['accept', 'accept-language', 'content-language', 'content-type', 'range']
+
+  beforeEach(() => {
+    // The mainnet document — which is where the cross-environment read is made FROM.
+    installWindow('https://status.cloudsforge.online/')
+    fetchStub = installFetch(() => json(200, document()))
+  })
+
+  it('sends no request header outside the CORS safelist', async () => {
+    await fetchPublicStatus()
+    const names = Object.keys(onlyCall().headers).map((name) => name.toLowerCase())
+    const unsafe = names.filter((name) => !SAFELISTED.includes(name))
+    assert.deepEqual(unsafe, [], `each of these preflights the read: ${unsafe.join(', ')}`)
+  })
+
+  it('and cache-control in particular, which is the one that shipped', async () => {
+    // Named on its own so the failure says which header, rather than only that there is one.
+    await fetchPublicStatus()
+    const names = Object.keys(onlyCall().headers).map((name) => name.toLowerCase())
+    assert.equal(names.includes('cache-control'), false)
+    assert.equal(names.includes('pragma'), false)
   })
 })
 
