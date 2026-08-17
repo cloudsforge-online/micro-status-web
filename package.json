@@ -1,6 +1,6 @@
 {
   "name": "@cloudsforge/status-web",
-  "version": "2026.8.72",
+  "version": "2026.8.73",
   "packageManager": "pnpm@11.9.0",
   "private": true,
   "description": "The CloudsForge public status page. Renders micro-beacon's redacted projection, unauthenticated.",
