@@ -55,6 +55,25 @@ describe('the absolute stamp is UTC, always', () => {
     assert.equal(absoluteStamp('2026-07-31T09:00:00.000Z'), '31 Jul 2026, 09:00 UTC')
   })
 
+  it('spells every month in three letters, September included', () => {
+    // ── `month: 'short'` IS `Sept` IN en-GB, AND ONLY FOR SEPTEMBER ──────────────────────────
+    //
+    // A fixed locale was chosen so one document reads the same on a phone, in a screenshot and in
+    // CI. A month whose width depends on which month it is breaks that promise from the other
+    // side, and it cannot be found by sampling: eleven of the twelve agree with the intent.
+    const stamps = [
+      ['2026-01-15', '15 Jan 2026'], ['2026-02-15', '15 Feb 2026'], ['2026-03-15', '15 Mar 2026'],
+      ['2026-04-15', '15 Apr 2026'], ['2026-05-15', '15 May 2026'], ['2026-06-15', '15 Jun 2026'],
+      ['2026-07-15', '15 Jul 2026'], ['2026-08-15', '15 Aug 2026'], ['2026-09-15', '15 Sep 2026'],
+      ['2026-10-15', '15 Oct 2026'], ['2026-11-15', '15 Nov 2026'], ['2026-12-15', '15 Dec 2026'],
+    ] as const
+    for (const [day, expected] of stamps) {
+      assert.equal(absoluteStamp(`${day}T09:00:00.000Z`), `${expected}, 09:00 UTC`)
+    }
+    const widths = new Set(stamps.map(([, expected]) => expected.length))
+    assert.equal(widths.size, 1, `stamps render at ${[...widths].join(' and ')} characters`)
+  })
+
   it('does not shift with the machine’s zone', () => {
     // The same instant expressed with an offset must render identically.
     assert.equal(
@@ -119,6 +138,20 @@ describe('day labels are UTC', () => {
   it('labels a day without shifting it into the reader’s zone', () => {
     assert.equal(dayLabel('2026-07-31'), '31 Jul')
     assert.equal(dayLabel('2026-01-01'), '01 Jan')
+  })
+
+  it('is the same width in every month, so the strip does not jitter', () => {
+    // Thirty labels under thirty equal-width bars. `Sept` is four characters where the other
+    // eleven months are three, so for thirty days a year one column was wider than its bar.
+    const labels = [
+      '15 Jan', '15 Feb', '15 Mar', '15 Apr', '15 May', '15 Jun',
+      '15 Jul', '15 Aug', '15 Sep', '15 Oct', '15 Nov', '15 Dec',
+    ]
+    labels.forEach((expected, month) => {
+      const day = `2026-${(month + 1).toString().padStart(2, '0')}-15`
+      assert.equal(dayLabel(day), expected)
+    })
+    assert.equal(new Set(labels.map((l) => l.length)).size, 1)
   })
 
   it('is null for a malformed day', () => {

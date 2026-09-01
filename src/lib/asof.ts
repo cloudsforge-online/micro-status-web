@@ -61,16 +61,38 @@ export function absoluteStamp(iso: string | null): string | null {
   if (iso === null) return null
   const at = new Date(iso)
   if (Number.isNaN(at.getTime())) return null
-  return `${at.toLocaleString('en-GB', {
-    timeZone: 'UTC',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })} UTC`
+  const day = at.getUTCDate().toString().padStart(2, '0')
+  const hour = at.getUTCHours().toString().padStart(2, '0')
+  const minute = at.getUTCMinutes().toString().padStart(2, '0')
+  return `${day} ${SHORT_MONTHS[at.getUTCMonth()]} ${at.getUTCFullYear()}, ${hour}:${minute} UTC`
 }
+
+/**
+ * The three-letter month names, written out rather than asked of the runtime.
+ *
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ * **`month: 'short'` IS NOT THREE LETTERS IN en-GB, AND THE MONTH IT IS NOT IS SEPTEMBER.**
+ *
+ * `toLocaleString('en-GB', { month: 'short' })` returns `Sept` for September and three letters for
+ * every other month. That is CLDR's en-GB data rather than a bug in any runtime.
+ *
+ * It is worse on THIS surface than on most. The header above says why the zone is fixed: the same
+ * document must produce the same string on a reader's phone, in a screenshot pasted into a ticket,
+ * and in CI. A month name whose width depends on which month it is breaks the same promise from
+ * the other direction — {@link dayLabel} is the x-axis of the uptime strip, thirty labels in a row
+ * under thirty equal-width bars, and for thirty days a year one of them was wider than the rest.
+ *
+ * A LITERAL TABLE RATHER THAN A DIFFERENT LOCALE, and that is the same argument as the time zone.
+ * `en-US` gives `Sep` today, which would make the output depend on the CLDR revision the runtime
+ * was built with and on whether it is a full-icu build at all — a small-icu Node falls back to
+ * `en-US` whatever is asked for. This file already refuses to let the reader's machine decide what
+ * a timestamp says; it should not let the build decide either.
+ * ══════════════════════════════════════════════════════════════════════════════════════════════
+ */
+const SHORT_MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+] as const
 
 /**
  * "4 minutes ago", in whole units.
@@ -119,5 +141,5 @@ export function observedSentence(iso: string | null, now: Date = new Date()): st
 export function dayLabel(day: string): string | null {
   const at = new Date(`${day}T00:00:00Z`)
   if (Number.isNaN(at.getTime())) return null
-  return at.toLocaleDateString('en-GB', { timeZone: 'UTC', day: '2-digit', month: 'short' })
+  return `${at.getUTCDate().toString().padStart(2, '0')} ${SHORT_MONTHS[at.getUTCMonth()]}`
 }
